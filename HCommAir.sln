@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HCommAir", "HCommAir\HCommAir.csproj", "{614A6559-8884-4793-A208-8FA2B95115F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HCommAirExample", "HCommAirExample\HCommAirExample.csproj", "{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{614A6559-8884-4793-A208-8FA2B95115F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{614A6559-8884-4793-A208-8FA2B95115F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{614A6559-8884-4793-A208-8FA2B95115F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{614A6559-8884-4793-A208-8FA2B95115F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5883611F-14F1-47F0-BC09-93CD536782C3}
+	EndGlobalSection
+EndGlobal

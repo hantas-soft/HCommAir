@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Company>Hantas</Company>
+    <Authors>Eloiz</Authors>
+    <Description>Hantas air tool device communication library</Description>
+    <Copyright>Copyright 2021. Hantas all right reserved.</Copyright>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageIcon>network.png</PackageIcon>
+    <PackageTags>C#, .Net Standard 2.0, Wireless</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="HComm" Version="1.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\eloiz\Downloads\network.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>

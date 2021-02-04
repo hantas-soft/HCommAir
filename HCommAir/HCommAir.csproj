@@ -10,6 +10,7 @@
     <PackageIcon>network.png</PackageIcon>
     <PackageTags>C#, .Net Standard 2.0, Wireless</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageProjectUrl>https://github.com/KyungtackKim/HCommAir.git</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

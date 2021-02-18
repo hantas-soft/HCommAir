@@ -71,6 +71,10 @@ namespace HCommAirExample
             this.cbCh1 = new System.Windows.Forms.ComboBox();
             this.ssInfo = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btOpen = new System.Windows.Forms.Button();
+            this.cbPorts = new System.Windows.Forms.ComboBox();
+            this.cbInterface = new System.Windows.Forms.ComboBox();
+            this.label5 = new System.Windows.Forms.Label();
             lbLog = new System.Windows.Forms.Label();
             lbGOption = new System.Windows.Forms.Label();
             lbSampling = new System.Windows.Forms.Label();
@@ -196,11 +200,6 @@ namespace HCommAirExample
             0,
             0,
             0});
-            this.nmCount.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
             this.nmCount.Name = "nmCount";
             this.nmCount.Size = new System.Drawing.Size(120, 21);
             this.nmCount.TabIndex = 29;
@@ -234,7 +233,7 @@ namespace HCommAirExample
             // 
             // btPath
             // 
-            this.btPath.Location = new System.Drawing.Point(498, 12);
+            this.btPath.Location = new System.Drawing.Point(255, 12);
             this.btPath.Name = "btPath";
             this.btPath.Size = new System.Drawing.Size(65, 23);
             this.btPath.TabIndex = 27;
@@ -246,8 +245,7 @@ namespace HCommAirExample
             // 
             this.tbPath.Location = new System.Drawing.Point(12, 12);
             this.tbPath.Name = "tbPath";
-            this.tbPath.ReadOnly = true;
-            this.tbPath.Size = new System.Drawing.Size(480, 21);
+            this.tbPath.Size = new System.Drawing.Size(237, 21);
             this.tbPath.TabIndex = 26;
             // 
             // btUnRegister
@@ -262,7 +260,7 @@ namespace HCommAirExample
             // 
             // btRegister
             // 
-            this.btRegister.Location = new System.Drawing.Point(255, 93);
+            this.btRegister.Location = new System.Drawing.Point(255, 122);
             this.btRegister.Name = "btRegister";
             this.btRegister.Size = new System.Drawing.Size(65, 23);
             this.btRegister.TabIndex = 24;
@@ -273,7 +271,7 @@ namespace HCommAirExample
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(324, 45);
+            this.label2.Location = new System.Drawing.Point(324, 69);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(96, 12);
             this.label2.TabIndex = 23;
@@ -284,9 +282,9 @@ namespace HCommAirExample
             this.lbRegisteredTools.DisplayMember = "Ip";
             this.lbRegisteredTools.FormattingEnabled = true;
             this.lbRegisteredTools.ItemHeight = 12;
-            this.lbRegisteredTools.Location = new System.Drawing.Point(326, 60);
+            this.lbRegisteredTools.Location = new System.Drawing.Point(326, 84);
             this.lbRegisteredTools.Name = "lbRegisteredTools";
-            this.lbRegisteredTools.Size = new System.Drawing.Size(237, 148);
+            this.lbRegisteredTools.Size = new System.Drawing.Size(237, 124);
             this.lbRegisteredTools.TabIndex = 22;
             this.lbRegisteredTools.ValueMember = "Mac";
             this.lbRegisteredTools.SelectedIndexChanged += new System.EventHandler(this.lbRegisteredTools_SelectedIndexChanged);
@@ -294,7 +292,7 @@ namespace HCommAirExample
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(10, 45);
+            this.label1.Location = new System.Drawing.Point(12, 69);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(86, 12);
             this.label1.TabIndex = 21;
@@ -305,9 +303,9 @@ namespace HCommAirExample
             this.lbScannedTools.DisplayMember = "Ip";
             this.lbScannedTools.FormattingEnabled = true;
             this.lbScannedTools.ItemHeight = 12;
-            this.lbScannedTools.Location = new System.Drawing.Point(12, 60);
+            this.lbScannedTools.Location = new System.Drawing.Point(12, 84);
             this.lbScannedTools.Name = "lbScannedTools";
-            this.lbScannedTools.Size = new System.Drawing.Size(237, 148);
+            this.lbScannedTools.Size = new System.Drawing.Size(237, 124);
             this.lbScannedTools.TabIndex = 20;
             this.lbScannedTools.ValueMember = "Mac";
             // 
@@ -361,6 +359,7 @@ namespace HCommAirExample
             this.btClear.TabIndex = 44;
             this.btClear.Text = "Clear";
             this.btClear.UseVisualStyleBackColor = true;
+            this.btClear.Click += new System.EventHandler(this.btClear_Click);
             // 
             // tbLog
             // 
@@ -547,11 +546,51 @@ namespace HCommAirExample
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(47, 17);
             this.toolStripStatusLabel1.Text = "v1.00.0";
             // 
+            // btOpen
+            // 
+            this.btOpen.Location = new System.Drawing.Point(488, 12);
+            this.btOpen.Name = "btOpen";
+            this.btOpen.Size = new System.Drawing.Size(75, 23);
+            this.btOpen.TabIndex = 50;
+            this.btOpen.Text = "Open";
+            this.btOpen.UseVisualStyleBackColor = true;
+            this.btOpen.Click += new System.EventHandler(this.btOpen_Click);
+            // 
+            // cbPorts
+            // 
+            this.cbPorts.FormattingEnabled = true;
+            this.cbPorts.Location = new System.Drawing.Point(361, 12);
+            this.cbPorts.Name = "cbPorts";
+            this.cbPorts.Size = new System.Drawing.Size(121, 20);
+            this.cbPorts.TabIndex = 51;
+            // 
+            // cbInterface
+            // 
+            this.cbInterface.FormattingEnabled = true;
+            this.cbInterface.Location = new System.Drawing.Point(127, 41);
+            this.cbInterface.Name = "cbInterface";
+            this.cbInterface.Size = new System.Drawing.Size(436, 20);
+            this.cbInterface.TabIndex = 52;
+            this.cbInterface.SelectedIndexChanged += new System.EventHandler(this.cbInterface_SelectedIndexChanged);
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(12, 44);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(53, 12);
+            this.label5.TabIndex = 53;
+            this.label5.Text = "Interface";
+            // 
             // FormExample
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(968, 501);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.cbInterface);
+            this.Controls.Add(this.cbPorts);
+            this.Controls.Add(this.btOpen);
             this.Controls.Add(this.ssInfo);
             this.Controls.Add(this.gbGraph);
             this.Controls.Add(this.groupBox3);
@@ -625,6 +664,10 @@ namespace HCommAirExample
         private System.Windows.Forms.ComboBox cbCh1;
         private System.Windows.Forms.StatusStrip ssInfo;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
+        private System.Windows.Forms.Button btOpen;
+        private System.Windows.Forms.ComboBox cbPorts;
+        private System.Windows.Forms.ComboBox cbInterface;
+        private System.Windows.Forms.Label label5;
     }
 }
 

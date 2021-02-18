@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.NetworkInformation;
 using HCommAir.Tools;
+using System.Linq;
 
 namespace HCommAir.Manager
 {
@@ -131,6 +132,13 @@ namespace HCommAir.Manager
                 if (!lockTakenRegister)
                     return false;
 
+                // get directory
+                var dir = Path.GetDirectoryName(path);
+                // check directory
+                if (!Directory.Exists(dir))
+                    // create directory
+                    Directory.CreateDirectory(dir);
+
                 // file stream
                 using (var fs = new FileStream(path, FileMode.Create))
                 {
@@ -237,7 +245,6 @@ namespace HCommAir.Manager
         /// </summary>
         /// <param name="p"></param>
         public void ChangeInterfaceProp(IPv4InterfaceProperties p) => Scanner.ChangeInterfaceProp(p);
-
         /// <summary>
         /// Get registered tools list
         /// </summary>
@@ -293,6 +300,36 @@ namespace HCommAir.Manager
                 if (lockTakenScan)
                     Monitor.Exit(ScannedTools);
             }
+        }
+
+        /// <summary>
+        /// Get all network interface
+        /// </summary>
+        /// <returns>interface list</returns>
+        public static List<NetworkInterface> GetAllInterfaces()
+        {
+            var list = new List<NetworkInterface>();
+            var nics = NetworkInterface.GetAllNetworkInterfaces();
+            // check interfaces
+            foreach (var item in nics)
+            {
+                var ipProp = item.GetIPProperties();
+                // most of VPN adapters will be skipped
+                if (!item.GetIPProperties().MulticastAddresses.Any())
+                    continue;
+                // multicast is meaningless for this type of connection
+                if (!item.SupportsMulticast)
+                    continue;
+                // this adapter is off or not connected
+                if (OperationalStatus.Up != item.OperationalStatus)
+                    continue;
+                // IPv4 is not configured on this adapter
+                if (item.GetIPProperties().GetIPv4Properties() == null)
+                    continue;
+                // add item
+                list.Add(item);
+            }
+            return list;
         }
 
         private void ScannerOnToolAttach(HcToolInfo info)

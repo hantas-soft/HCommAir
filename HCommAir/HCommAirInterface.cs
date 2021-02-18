@@ -38,8 +38,16 @@ namespace HCommAir
         /// <summary>
         /// HCommAir session received event
         /// </summary>
-        public event SessionReceived ReceivedMsg; 
-        
+        public event SessionReceived ReceivedMsg;
+        /// <summary>
+        /// HCommAir session max queue size
+        /// </summary>
+        public int MaxQueueSize { get; set; } = 30;
+        /// <summary>
+        /// HCommAir session max block size
+        /// </summary>
+        public int MaxBlockSize { get; set; } = 100;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -47,7 +55,7 @@ namespace HCommAir
         {
             // set manager event
             Manager.ToolAdded += OnToolConnect;
-            Manager.ToolRemoved += OnToolDisconnect;
+            Manager.ToolRemoved += OnToolRemoved;
             Manager.ToolConnect += OnToolConnect;
             Manager.ToolDisconnect += OnToolDisconnect;
         }
@@ -103,7 +111,7 @@ namespace HCommAir
         /// </summary>
         /// <param name="info">tool information</param>
         /// <returns>result</returns>
-        public HcSession GetSessions(HcToolInfo info)
+        public HcSession GetSession(HcToolInfo info)
         {
             var lockTaken = false;
             try
@@ -112,6 +120,28 @@ namespace HCommAir
                 Monitor.TryEnter(Sessions, TickPeriod, ref lockTaken);
                 // find session
                 return !lockTaken ? null : Sessions.Find(x => x.ToolInfo.Mac == info.Mac);
+            }
+            finally
+            {
+                // check lock taken
+                if (lockTaken)
+                    // unlock
+                    Monitor.Exit(Sessions);
+            }
+        }
+        /// <summary>
+        /// Get all sessions
+        /// </summary>
+        /// <returns>result</returns>
+        public List<HcSession> GetAllSessions()
+        {
+            var lockTaken = false;
+            try
+            {
+                // lock
+                Monitor.TryEnter(Sessions, TickPeriod, ref lockTaken);
+                // return sessions
+                return Sessions;
             }
             finally
             {
@@ -148,6 +178,45 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+        /// <summary>
+        /// Connect manual tool
+        /// </summary>
+        /// <param name="portName">port name</param>
+        public void ConnectManualTool(string portName)
+        {
+            var info = new HcToolInfo();
+            // get values
+            var values = info.GetValues();
+            // change com port
+            values[23] = Convert.ToByte(portName.Substring(3));
+            // change baud rate
+            values[24] = (57600 >> 8) & 0xFF;
+            values[25] = 57600 & 0xFF;
+            // change mac number
+            values[31] = values[23];
+            // set values
+            info.SetValues(values);
+            // connect tool
+            OnToolConnect(info);
+        }
+        /// <summary>
+        /// Disconnect manual tool
+        /// </summary>
+        /// <param name="portName"></param>
+        public void DisConnectManualTool(string portName)
+        {
+            var info = new HcToolInfo();
+            // get values
+            var values = info.GetValues();
+            // change com port
+            values[23] = Convert.ToByte(portName.Substring(3));
+            // change mac number
+            values[31] = values[23];
+            // set values
+            info.SetValues(values);
+            // disconnect tool
+            OnToolRemoved(info);
+        }
 
         private void OnToolConnect(HcToolInfo info)
         {
@@ -175,7 +244,10 @@ namespace HCommAir
                     Sessions.Add(session);                    
                 }
                 // setup
-                session.SetUp(CommType.Ethernet);
+                session.SetUp(info.Serial != string.Empty ? CommType.Ethernet : CommType.Serial);
+                // set message queue size and block size
+                session.MaxQueueSize = MaxQueueSize;
+                session.MaxBlockSize = MaxBlockSize;
                 // connect session
                 session.Connect();
             }
@@ -214,10 +286,37 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+        private void OnToolRemoved(HcToolInfo info)
+        {
+            var lockTaken = false;
+            try
+            {
+                // lock
+                Monitor.TryEnter(Sessions, TickPeriod, ref lockTaken);
+                // check lock taken
+                if (!lockTaken)
+                    return;
+
+                // get session
+                var session = Sessions.Find(x => x.ToolInfo.Mac == info.Mac);
+                // check session
+                if (session == null)
+                    return;
+                // disconnect
+                session.Disconnect();
+                // remove
+                Sessions.Remove(session);
+            }
+            finally
+            {
+                // check lock taken
+                if (lockTaken)
+                    // unlock
+                    Monitor.Exit(Sessions);
+            }
+        }
         private void OnConnectionChanged(HcToolInfo info, ConnectionState state)
         {
-            // debug
-            Console.WriteLine($@"== {info.Ip} / {state}");
             // event
             ChangedConnect?.Invoke(info, state);
         }

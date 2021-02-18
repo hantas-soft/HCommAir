@@ -31,7 +31,18 @@ namespace HCommAirExample
             // binding list
             lbRegisteredTools.DataSource = RegisterTools;
             lbScannedTools.DataSource = ScanTools;
-            
+            // check port list
+            foreach (var item in HComm.Device.HcSerial.GetPortNames())
+                // add port name
+                cbPorts.Items.Add(item);
+            // check interfcae list
+            foreach (var item in HcManager.GetAllInterfaces())
+                // add interface item
+                cbInterface.Items.Add($@"{item.Name}:{item.Id}");
+            // check list
+            if (cbInterface.Items.Count > 0)
+                cbInterface.SelectedIndex = 0;
+
             // set event
             Interface.ChangedConnect += InterfaceOnChangedConnect;
             Interface.ReceivedMsg += InterfaceOnReceivedMsg;
@@ -133,7 +144,7 @@ namespace HCommAirExample
             // stop all sessions event monitoring
             Interface.StopAllSessionsEventMonitor();
             // select session
-            SelectedSession = Interface.GetSessions(item);
+            SelectedSession = Interface.GetSession(item);
             // check selected session
             if (SelectedSession == null)
                 return;
@@ -154,7 +165,7 @@ namespace HCommAirExample
             // check sender
             if (sender == btGetParam)
                 // get param
-                SelectedSession.GetParam(addr, count);
+                SelectedSession.GetParam(addr, count, true);
             else if (sender == btSetParam)
                 // set param
                 SelectedSession.SetParam(addr, count);
@@ -204,11 +215,65 @@ namespace HCommAirExample
                 GraphState = false;
             }
         }
+        private void btClear_Click(object sender, EventArgs e)
+        {
+            // clear
+            Logger.Clear();
+            // update
+            tbLog.Text = $@"{Logger}";
+        }
+        private void btOpen_Click(object sender, EventArgs e)
+        {
+            // check text
+            if (btOpen.Text == @"Open")
+            {
+                // get port name
+                var port = $@"{cbPorts.SelectedItem}";
+                // check port name
+                if (port == string.Empty)
+                    return;
+                // Connect manual tool
+                Interface.ConnectManualTool(port);
+            }
+            else
+            {
+                // get port name
+                var port = $@"{cbPorts.SelectedItem}";
+                // check port name
+                if (port == string.Empty)
+                    return;
+                // Disconnect manual tool
+                Interface.DisConnectManualTool(port);
+                // set text
+                btOpen.Text = @"Open";
+            }
+        }
+
+        private void cbInterface_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // get selected item
+            var item = $@"{cbInterface.SelectedItem}".Split(':')[1];
+            // find interface
+            var inf = HcManager.GetAllInterfaces().Find(x => x.Id == item);
+            // check interface
+            if (inf == null)
+                return;
+            // change interface
+            Interface.ChangeInterfaceProp(inf.GetIPProperties().GetIPv4Properties());
+        }
         private void InterfaceOnChangedConnect(HcToolInfo info, ConnectionState state)
         {
-            // check mac address
-            if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
-                return;
+            // check tool serial
+            if (info.Serial != string.Empty)
+            {
+                // check mac address
+                if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
+                    return;
+            }
+            else
+                // set selected tool
+                SelectedSession = Interface.GetSession(info);
+
             
             Invoke(new EventHandler(delegate
             {
@@ -221,11 +286,9 @@ namespace HCommAirExample
             // check mac address
             if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
                 return;
-            var msg = $@"== {info.Ip} : Cmd:{cmd} / Addr:{addr} / Len:{values.Length}";
             // add log
-            Logger.AppendLine(msg);
-            // update
-            Invoke(new EventHandler(delegate { tbLog.Text = $@"{Logger}"; }));
+            if (cmd == Command.Mor)
+                AddLog($@"== {info.Ip} : Cmd:{cmd} / Addr:{addr} / Len:{values.Length}");
             // check command
             switch (cmd)
             {
@@ -240,6 +303,14 @@ namespace HCommAirExample
                 case Command.Write:
                     break;
                 case Command.Info:
+                    // check tool serial
+                    if (info.Serial != string.Empty)
+                        break;
+                    Invoke(new EventHandler(delegate
+                    {
+                        lbIp.Text = $@"IP: {info.Ip}";
+                        btOpen.Text = @"CLOSE";
+                    }));
                     break;
                 case Command.Graph:
                     break;
@@ -252,6 +323,26 @@ namespace HCommAirExample
                 default:
                     throw new ArgumentOutOfRangeException(nameof(cmd), cmd, null);
             }
+        }
+        private void AddLog(string log, bool lineFeed = false)
+        {
+            // add time
+            Logger.Append($@"[{DateTime.Now:HH:mm:ss.fff}] ");
+            // check line feed
+            if (lineFeed)
+                // add line feed
+                Logger.AppendLine();
+            // add log
+            Logger.AppendLine($@"{log}");
+            // print
+            tbLog.BeginInvoke(new Action(() =>
+            {
+                // set text
+                tbLog.Text = Logger.ToString();
+                // set scroll position end
+                tbLog.SelectionStart = Logger.Length;
+                tbLog.ScrollToCaret();
+            }));
         }
     }
 }

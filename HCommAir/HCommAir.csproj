@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -11,14 +11,17 @@
     <PackageTags>C#, .Net Standard 2.0, Wireless</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageProjectUrl>https://github.com/KyungtackKim/HCommAir.git</PackageProjectUrl>
+    <AssemblyVersion>1.0.7.3</AssemblyVersion>
+    <FileVersion>1.0.7.3</FileVersion>
+    <Version>1.0.7.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HComm" Version="1.2.3" />
+    <PackageReference Include="HComm" Version="1.2.7" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="C:\Users\eloiz\Downloads\network.png">
+    <None Include="network.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>

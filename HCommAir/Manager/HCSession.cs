@@ -9,40 +9,59 @@ namespace HCommAir.Manager
     /// </summary>
     public class HcSession
     {
-        private int _maxQueueSize;
-        private int _maxBlockSize;
         private HCommInterface Session { get; }
         private HCommInterface EventSession { get; }
         
+        /// <summary>
+        /// Tool information
+        /// </summary>
         public HcToolInfo ToolInfo { get; }
+        /// <summary>
+        /// Connection state
+        /// </summary>
         public ConnectionState State { get; private set; }
+        /// <summary>
+        /// Session max queue size
+        /// </summary>
         public int MaxQueueSize
         {
-            get => _maxQueueSize;
-            set
-            {
-                // set max queue size
-                _maxQueueSize = value;
-                // set sessions max queue size
-                Session.MaxQueueSize = _maxQueueSize;
-                EventSession.MaxQueueSize = _maxQueueSize;
-            }
+            get => Session.MaxQueueSize;
+            set => Session.MaxQueueSize = value;
         }
+        /// <summary>
+        /// Session max block size
+        /// </summary>
         public int MaxBlockSize
         {
-            get => _maxBlockSize;
-            set
-            {
-                // set max block size
-                _maxBlockSize = value;
-                // set sessions max queue size
-                Session.MaxParamBlock = _maxBlockSize;
-                EventSession.MaxParamBlock = _maxBlockSize;
-            }
+            get => Session.MaxParamBlock;
+            set => Session.MaxParamBlock = value;
         }
+        /// <summary>
+        /// Session queue count
+        /// </summary>
+        public int QueueCount => Session.QueueCount;
+
+        /// <summary>
+        /// Connection changed event handler delegate
+        /// </summary>
+        /// <param name="info">tool information</param>
+        /// <param name="state">connection state</param>
         public delegate void ConnectionHandler(HcToolInfo info, ConnectionState state);
+        /// <summary>
+        /// Received event handler delegate 
+        /// </summary>
+        /// <param name="info">tool information</param>
+        /// <param name="cmd">command</param>
+        /// <param name="addr">address</param>
+        /// <param name="values">values</param>
         public delegate void ReceivedHandler(HcToolInfo info, Command cmd, int addr, int[] values);
+        /// <summary>
+        /// Connection changed event
+        /// </summary>
         public event ConnectionHandler ConnectionChanged;
+        /// <summary>
+        /// Received event
+        /// </summary>
         public event ReceivedHandler SessionReceived, EventReceived;
         
         /// <summary>
@@ -97,6 +116,7 @@ namespace HCommAir.Manager
             if (EventSession.Type == CommType.Ethernet)
                 // try connect event session
                 EventSession.Connect(ToolInfo.Ip, ToolInfo.Port + 1);
+
             // change state
             State = ConnectionState.Connecting;
         }
@@ -123,8 +143,8 @@ namespace HCommAir.Manager
         /// <param name="addr">address</param>
         /// <param name="count">count</param>
         /// <returns>result</returns>
-        public bool GetParam(ushort addr, ushort count) =>
-            State == ConnectionState.Connected && Session.GetParam(addr, count);
+        public bool GetParam(ushort addr, ushort count, bool merge = false) =>
+            State == ConnectionState.Connected && Session.GetParam(addr, count, merge);
         /// <summary>
         /// Set tool parameter
         /// </summary>

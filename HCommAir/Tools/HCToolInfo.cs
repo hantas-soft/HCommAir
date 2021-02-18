@@ -46,14 +46,13 @@ namespace HCommAir.Tools
         /// Set raw values
         /// </summary>
         /// <param name="values">values</param>
-        public void SetValues(byte[] values)
+        public void SetValues(IEnumerable<byte> values)
         {
             // clear values
             Values.Clear();
             // add values
             Values.AddRange(values);
         }
-
         /// <summary>
         /// Tool serial
         /// </summary>
@@ -63,9 +62,11 @@ namespace HCommAir.Tools
         /// </summary>
         public int Model => Values[16] << 24 | Values[17] << 16 | Values[18] << 8 | Values[19];
         /// <summary>
-        /// Tool ip address
+        /// Tool ip address or com port
         /// </summary>
-        public string Ip => $@"{Values[20]}.{Values[21]}.{Values[22]}.{Values[23]}";
+        public string Ip => Values[20] != 0 || Values[21] != 0 || Values[22] != 0
+            ? $@"{Values[20]}.{Values[21]}.{Values[22]}.{Values[23]}"
+            : $@"COM{Values[23]}";
         /// <summary>
         /// Tool port number
         /// </summary>

@@ -16,7 +16,7 @@ namespace HCommAirExample
             InitializeComponent();
         }
 
-        private HCommAirInterface Interface { get; } = new HCommAirInterface();
+        private HCommAirInterface HCommAir { get; } = new HCommAirInterface();
         private BindingList<HcToolInfo> RegisterTools { get; } = new BindingList<HcToolInfo>();
         private BindingList<HcToolInfo> ScanTools { get; } = new BindingList<HcToolInfo>();
         private HcSession SelectedSession { get; set; }
@@ -44,19 +44,19 @@ namespace HCommAirExample
                 cbInterface.SelectedIndex = 0;
 
             // set event
-            Interface.ChangedConnect += InterfaceOnChangedConnect;
-            Interface.ReceivedMsg += InterfaceOnReceivedMsg;
+            HCommAir.ChangedConnect += OnChangedConnect;
+            HCommAir.ReceivedMsg += OnReceivedMsg;
             // load register tools
-            Interface.LoadRegisterTools(tbPath.Text);
+            HCommAir.LoadRegisterTools(tbPath.Text);
             // start timer
             timer.Start();
             // start scanner
-            Interface.Start();
+            HCommAir.Start();
         }
         private void timer_Tick(object sender, EventArgs e)
         {
-            var scanned = Interface.GetScannedTools();
-            var registered = Interface.GetRegisteredTools();
+            var scanned = HCommAir.GetScannedTools();
+            var registered = HCommAir.GetRegisteredTools();
             // check scanned tools count
             if (scanned.Count != ScanTools.Count)
             {
@@ -106,8 +106,8 @@ namespace HCommAirExample
         }
         private void btRegister_Click(object sender, EventArgs e)
         {
-            var scanned = Interface.GetScannedTools();
-            var registered = Interface.GetRegisteredTools();
+            var scanned = HCommAir.GetScannedTools();
+            var registered = HCommAir.GetRegisteredTools();
             // check sender
             if (sender == btRegister)
             {
@@ -117,9 +117,9 @@ namespace HCommAirExample
                 // get item
                 var info = scanned.Find(x => x.Mac == scanned[lbScannedTools.SelectedIndex].Mac);
                 // add item
-                Interface.RegisterTool(info);
+                HCommAir.RegisterTool(info);
                 // save tool list
-                Interface.SaveRegisterTools(tbPath.Text);
+                HCommAir.SaveRegisterTools(tbPath.Text);
             }
             else
             {
@@ -129,9 +129,9 @@ namespace HCommAirExample
                 // get item
                 var info = registered.Find(x => x.Mac == registered[lbRegisteredTools.SelectedIndex].Mac);
                 // remove item
-                Interface.UnRegisterTool(info);
+                HCommAir.UnRegisterTool(info);
                 // save tool list
-                Interface.SaveRegisterTools(tbPath.Text);
+                HCommAir.SaveRegisterTools(tbPath.Text);
             }
         }
         private void lbRegisteredTools_SelectedIndexChanged(object sender, EventArgs e)
@@ -142,9 +142,9 @@ namespace HCommAirExample
             if (item == null)
                 return;
             // stop all sessions event monitoring
-            Interface.StopAllSessionsEventMonitor();
+            HCommAir.StopAllSessionsEventMonitor();
             // select session
-            SelectedSession = Interface.GetSession(item);
+            SelectedSession = HCommAir.GetSession(item);
             // check selected session
             if (SelectedSession == null)
                 return;
@@ -165,7 +165,7 @@ namespace HCommAirExample
             // check sender
             if (sender == btGetParam)
                 // get param
-                SelectedSession.GetParam(addr, count, true);
+                SelectedSession.GetParam(addr, count);
             else if (sender == btSetParam)
                 // set param
                 SelectedSession.SetParam(addr, count);
@@ -233,7 +233,7 @@ namespace HCommAirExample
                 if (port == string.Empty)
                     return;
                 // Connect manual tool
-                Interface.ConnectManualTool(port);
+                HCommAir.ConnectManualTool(port);
             }
             else
             {
@@ -243,7 +243,7 @@ namespace HCommAirExample
                 if (port == string.Empty)
                     return;
                 // Disconnect manual tool
-                Interface.DisConnectManualTool(port);
+                HCommAir.DisConnectManualTool(port);
                 // set text
                 btOpen.Text = @"Open";
             }
@@ -259,9 +259,9 @@ namespace HCommAirExample
             if (inf == null)
                 return;
             // change interface
-            Interface.ChangeInterfaceProp(inf.GetIPProperties().GetIPv4Properties());
+            HCommAir.ChangeInterfaceProp(inf.GetIPProperties().GetIPv4Properties());
         }
-        private void InterfaceOnChangedConnect(HcToolInfo info, ConnectionState state)
+        private void OnChangedConnect(HcToolInfo info, ConnectionState state)
         {
             // check tool serial
             if (info.Serial != string.Empty)
@@ -272,7 +272,7 @@ namespace HCommAirExample
             }
             else
                 // set selected tool
-                SelectedSession = Interface.GetSession(info);
+                SelectedSession = HCommAir.GetSession(info);
 
             
             Invoke(new EventHandler(delegate
@@ -281,14 +281,13 @@ namespace HCommAirExample
                 lbState.Text = $@"STATE: {state}";
             }));
         }
-        private void InterfaceOnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
+        private void OnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
         {
             // check mac address
             if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
                 return;
             // add log
-            if (cmd == Command.Mor)
-                AddLog($@"== {info.Ip} : Cmd:{cmd} / Addr:{addr} / Len:{values.Length}");
+            AddLog($@"== {info.Ip} : Cmd:{cmd} / Addr:{addr} / Len:{values.Length}");
             // check command
             switch (cmd)
             {

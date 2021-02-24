@@ -93,7 +93,7 @@ namespace HCommAir.Tools
         /// </summary>
         public enum ToolModelType
         {
-            Mdc, Bm, Bmt, Mdtc
+            None, MD, BM, BMT, MDT
         }
     }
 }

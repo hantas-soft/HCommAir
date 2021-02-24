@@ -139,7 +139,8 @@ namespace HCommAir.Manager
             // set tool information
             var info = new HcToolInfo(recv.Skip(4));
             // check MD/MDTC
-            if (info.ToolType == HcToolInfo.ToolModelType.Mdc || info.ToolType == HcToolInfo.ToolModelType.Mdtc)
+            if (info.ToolType == HcToolInfo.ToolModelType.None ||
+                info.ToolType == HcToolInfo.ToolModelType.MD || info.ToolType == HcToolInfo.ToolModelType.MDT)
                 return;
             // lock searched tool list
             if (!Monitor.TryEnter(SearchTools, _timeoutSpan))

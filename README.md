@@ -132,6 +132,7 @@ v1.0.7
 - HComm library version update (v1.2.7)
 - Save register file bug fixed
 - Network interface change function added
+- Tool scanning model type bug fixed
 
 v1.0.6
 - HComm library version update (v1.2.6)

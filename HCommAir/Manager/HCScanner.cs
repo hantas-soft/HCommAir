@@ -102,7 +102,7 @@ namespace HCommAir.Manager
                 for (var i = 0; i < SearchTools.Count; i++)
                 {
                     // check state update
-                    if (!SearchTools[i].CheckTime()) 
+                    if (!SearchTools[i].CheckTime())
                         continue;
                     // debug console
                     Console.WriteLine($@"Detach Tool: {SearchTools[i].Ip}");
@@ -112,6 +112,11 @@ namespace HCommAir.Manager
                     // remove tool
                     SearchTools.Remove(SearchTools[i]);
                 }
+            }
+            catch (Exception e)
+            {
+                // debug
+                Console.WriteLine($@"{e.Message}");
             }
             finally
             {
@@ -164,6 +169,8 @@ namespace HCommAir.Manager
                 }
                 else
                 {
+                    // change values
+                    tool.SetValues(info.GetValues());
                     // refresh tool
                     tool.ResetTime();
                     // alive

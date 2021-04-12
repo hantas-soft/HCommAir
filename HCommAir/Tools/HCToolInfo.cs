@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 
@@ -7,6 +8,7 @@ namespace HCommAir.Tools
     /// <summary>
     /// HCommAir tool information
     /// </summary>
+    [Serializable]
     public class HcToolInfo : HcTimeout
     {
         private List<byte> Values { get; }

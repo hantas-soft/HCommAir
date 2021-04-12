@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.NetworkInformation;
 using HComm.Common;
 using HCommAir.Manager;
@@ -47,6 +48,14 @@ namespace HCommAir
         /// HCommAir session max block size
         /// </summary>
         public int MaxBlockSize { get; set; } = 100;
+        /// <summary>
+        /// HCommAir used sub tool manager
+        /// </summary>
+        public bool UseSubTool
+        {
+            get => Manager.UseSubTools;
+            set => Manager.UseSubTools = value;
+        }
 
         /// <summary>
         /// Constructor
@@ -58,6 +67,7 @@ namespace HCommAir
             Manager.ToolRemoved += OnToolRemoved;
             Manager.ToolConnect += OnToolConnect;
             Manager.ToolDisconnect += OnToolDisconnect;
+            Manager.ToolAlive += OnToolAlive;
         }
         /// <summary>
         /// Tool scanning start
@@ -85,15 +95,20 @@ namespace HCommAir
         /// <returns></returns>
         public bool LoadRegisterTools(string path) => Manager.LoadRegisterTools(path);
         /// <summary>
+        /// Get scanned tool list
+        /// </summary>
+        /// <returns>result</returns>
+        public List<HcToolInfo> GetScannedTools() => Manager.GetScannedTools();
+        /// <summary>
         /// Get registered tool list
         /// </summary>
         /// <returns>too list</returns>
         public List<HcToolInfo> GetRegisteredTools() => Manager.GetRegisteredTools();
         /// <summary>
-        /// Get scanned tool list
+        /// Get sub-registered tool list
         /// </summary>
-        /// <returns>result</returns>
-        public List<HcToolInfo> GetScannedTools() => Manager.GetScannedTools();
+        /// <returns>too list</returns>
+        public List<HcToolInfo> GetSubRegisteredTools() => Manager.GetSubRegisteredTools();
         /// <summary>
         /// Register tool
         /// </summary>
@@ -106,6 +121,18 @@ namespace HCommAir
         /// <param name="info">tool information</param>
         /// <returns>result</returns>
         public bool UnRegisterTool(HcToolInfo info) => Manager.UnRegisterTool(info);
+        /// <summary>
+        /// Sub-Register tool
+        /// </summary>
+        /// <param name="info">tool information</param>
+        /// <returns>result</returns>
+        public bool SubRegisterTool(HcToolInfo info) => Manager.SubRegisterTool(info);
+        /// <summary>
+        /// Sub-UnRegister tool
+        /// </summary>
+        /// <param name="info">tool information</param>
+        /// <returns>result</returns>
+        public bool SubUnRegisterTool(HcToolInfo info) => Manager.SubUnRegisterTool(info);
         /// <summary>
         /// Get session
         /// </summary>
@@ -217,8 +244,10 @@ namespace HCommAir
             // disconnect tool
             OnToolRemoved(info);
         }
-
-        private void OnToolConnect(HcToolInfo info)
+        /// <summary>
+        /// Stop sub tools 
+        /// </summary>
+        public void StopSubTools()
         {
             var lockTaken = false;
             try
@@ -229,6 +258,40 @@ namespace HCommAir
                 if (!lockTaken)
                     return;
 
+                foreach (var session in GetSubRegisteredTools()
+                    .Select(tool => Sessions.Find(x => x.ToolInfo.Mac == tool.Mac)))
+                {
+                    // check session
+                    if (session == null)
+                        continue;
+                    // disconnect
+                    session.Disconnect();
+                    // remove
+                    Sessions.Remove(session);
+                }
+            }
+            finally
+            {
+                // check lock taken
+                if (lockTaken)
+                    // unlock
+                    Monitor.Exit(Sessions);
+            }
+        }
+        
+        private void OnToolConnect(HcToolInfo info)
+        {
+            var lockTaken = false;
+            try
+            {
+                // lock
+                Monitor.TryEnter(Sessions, TickPeriod, ref lockTaken);
+                // check lock taken
+                if (!lockTaken)
+                    return;
+                // check tool connect available
+                if (!info.AvailableConnection)
+                    return;
                 // find session
                 var session = Sessions.Find(x => x.ToolInfo.Mac == info.Mac);
                 // check session
@@ -306,6 +369,73 @@ namespace HCommAir
                 session.Disconnect();
                 // remove
                 Sessions.Remove(session);
+            }
+            finally
+            {
+                // check lock taken
+                if (lockTaken)
+                    // unlock
+                    Monitor.Exit(Sessions);
+            }
+        }
+        private void OnToolAlive(HcToolInfo info)
+        {
+            var lockTaken = false;
+            try
+            {
+                // lock
+                Monitor.TryEnter(Sessions, TickPeriod, ref lockTaken);
+                // check lock taken
+                if (!lockTaken)
+                    return;
+                // check tool connect available
+                if (!info.AvailableConnection)
+                    return;
+                // find session
+                var session = Sessions.Find(x => x.ToolInfo.Mac == info.Mac);
+                // check session
+                if (session != null)
+                    return;
+                // get registered tools
+                var register = GetRegisteredTools().Find(x => x.Mac == info.Mac);
+                var subRegister = GetSubRegisteredTools().Find(x => x.Mac == info.Mac);
+                // check session
+                if (register != null && subRegister == null)
+                {
+                    // new session
+                    session = new HcSession(info);
+                    // set session event
+                    session.ConnectionChanged += OnConnectionChanged;
+                    session.SessionReceived += OnSessionReceived;
+                    session.EventReceived += OnSessionReceived;
+                    // setup
+                    session.SetUp(info.Serial != string.Empty ? CommType.Ethernet : CommType.Serial);
+                    // set message queue size and block size
+                    session.MaxQueueSize = MaxQueueSize;
+                    session.MaxBlockSize = MaxBlockSize;
+                    // connect session
+                    session.Connect();
+                    // add session
+                    Sessions.Add(session);
+                }
+                else if (register == null && UseSubTool && subRegister != null)
+                {
+                    // new session
+                    session = new HcSession(info);
+                    // set session event
+                    session.ConnectionChanged += OnConnectionChanged;
+                    session.SessionReceived += OnSessionReceived;
+                    session.EventReceived += OnSessionReceived;
+                    // setup
+                    session.SetUp(info.Serial != string.Empty ? CommType.Ethernet : CommType.Serial);
+                    // set message queue size and block size
+                    session.MaxQueueSize = MaxQueueSize;
+                    session.MaxBlockSize = MaxBlockSize;
+                    // connect session
+                    session.Connect();
+                    // add session
+                    Sessions.Add(session);
+                }
             }
             finally
             {

@@ -128,6 +128,10 @@ private void OnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
 
 ## History
 
+v1.0.8
+- Sub-tool management added and session re-connect bug fixed
+- Tool management file struct changed
+
 v1.0.7
 - HComm library version update (v1.2.7)
 - Save register file bug fixed

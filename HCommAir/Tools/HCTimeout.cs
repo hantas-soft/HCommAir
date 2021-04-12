@@ -5,6 +5,7 @@ namespace HCommAir.Tools
     /// <summary>
     /// HCommAir tool timeout class
     /// </summary>
+    [Serializable]
     public class HcTimeout
     {
         private DateTime _checkTime = DateTime.Now;

@@ -142,6 +142,7 @@ namespace HCommAir.Manager
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="count">count</param>
+        /// <param name="merge">block merged state</param>
         /// <returns>result</returns>
         public bool GetParam(ushort addr, ushort count, bool merge = false) =>
             State == ConnectionState.Connected && Session.GetParam(addr, count, merge);

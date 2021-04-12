@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Windows.Forms;
 using HComm.Common;
@@ -17,25 +20,28 @@ namespace HCommAirExample
         }
 
         private HCommAirInterface HCommAir { get; } = new HCommAirInterface();
-        private BindingList<HcToolInfo> RegisterTools { get; } = new BindingList<HcToolInfo>();
         private BindingList<HcToolInfo> ScanTools { get; } = new BindingList<HcToolInfo>();
+        private BindingList<HcToolInfo> RegisterTools { get; } = new BindingList<HcToolInfo>();
+        private BindingList<HcToolInfo> SubRegisterTools { get; } = new BindingList<HcToolInfo>();
         private HcSession SelectedSession { get; set; }
         private bool GraphState { get; set; }
         private DateTime GraphTime { get; set; } = DateTime.Now;
         private StringBuilder Logger { get; } = new StringBuilder();
+        private bool FormLoaded { get; set; }
         
         private void FormExample_Load(object sender, EventArgs e)
         {
             // set path
             tbPath.Text = Properties.Settings.Default.Path;
             // binding list
-            lbRegisteredTools.DataSource = RegisterTools;
             lbScannedTools.DataSource = ScanTools;
+            lbRegisteredTools.DataSource = RegisterTools;
+            lbSubRegisteredTools.DataSource = SubRegisterTools;
             // check port list
             foreach (var item in HComm.Device.HcSerial.GetPortNames())
                 // add port name
                 cbPorts.Items.Add(item);
-            // check interfcae list
+            // check interface list
             foreach (var item in HcManager.GetAllInterfaces())
                 // add interface item
                 cbInterface.Items.Add($@"{item.Name}:{item.Id}");
@@ -48,15 +54,26 @@ namespace HCommAirExample
             HCommAir.ReceivedMsg += OnReceivedMsg;
             // load register tools
             HCommAir.LoadRegisterTools(tbPath.Text);
+            // checked change
+            cbSubTools.Checked = HCommAir.UseSubTool;
+            // check registered tool
+            foreach (var tool in HCommAir.GetRegisteredTools())
+                RegisterTools.Add(tool);
+            foreach (var tool in HCommAir.GetSubRegisteredTools())
+                SubRegisterTools.Add(tool);
             // start timer
             timer.Start();
             // start scanner
             HCommAir.Start();
+            
+            // set form loaded state
+            FormLoaded = true;
         }
         private void timer_Tick(object sender, EventArgs e)
         {
             var scanned = HCommAir.GetScannedTools();
             var registered = HCommAir.GetRegisteredTools();
+            var subRegistered = HCommAir.GetSubRegisteredTools();
             // check scanned tools count
             if (scanned.Count != ScanTools.Count)
             {
@@ -81,6 +98,18 @@ namespace HCommAirExample
                 // refresh
                 lbRegisteredTools.Refresh();
             }
+            // check sub-registered tools count
+            if (subRegistered.Count != SubRegisterTools.Count)
+            {
+                // clear register tools item
+                SubRegisterTools.Clear();
+                // add item list
+                foreach (var info in subRegistered)
+                    // add
+                    SubRegisterTools.Add(info);
+                // refresh
+                lbSubRegisteredTools.Refresh();
+            }
             // check graph state
             if (!GraphState || SelectedSession == null || SelectedSession.State != ConnectionState.Connected ||
                 !((DateTime.Now - GraphTime).TotalSeconds > 5))
@@ -103,6 +132,20 @@ namespace HCommAirExample
                 Properties.Settings.Default.Path = tbPath.Text;
                 Properties.Settings.Default.Save();
             }
+        }
+        private void cbSubTools_CheckedChanged(object sender, EventArgs e)
+        {
+            // check dialog
+            if (!FormLoaded)
+                return;
+            // change sub tools used state
+            HCommAir.UseSubTool = cbSubTools.Checked;
+            // save tool list
+            HCommAir.SaveRegisterTools(tbPath.Text);
+            // check state
+            if (!cbSubTools.Checked)
+                // stop sub-registered tools
+                HCommAir.StopSubTools();
         }
         private void btRegister_Click(object sender, EventArgs e)
         {
@@ -134,10 +177,43 @@ namespace HCommAirExample
                 HCommAir.SaveRegisterTools(tbPath.Text);
             }
         }
+        private void btSubRegister_Click(object sender, EventArgs e)
+        {
+            var scanned = HCommAir.GetScannedTools();
+            var registered = HCommAir.GetSubRegisteredTools();
+            // check sender
+            if (sender == btSubRegister)
+            {
+                // check index
+                if (lbScannedTools.SelectedIndex < 0 || lbScannedTools.SelectedIndex > scanned.Count)
+                    return;
+                // get item
+                var info = scanned.Find(x => x.Mac == scanned[lbScannedTools.SelectedIndex].Mac);
+                // add item
+                HCommAir.SubRegisterTool(info);
+                // save tool list
+                HCommAir.SaveRegisterTools(tbPath.Text);
+            }
+            else
+            {
+                // check index
+                if (lbSubRegisteredTools.SelectedIndex < 0 || lbSubRegisteredTools.SelectedIndex > registered.Count)
+                    return;
+                // get item
+                var info = registered.Find(x => x.Mac == registered[lbSubRegisteredTools.SelectedIndex].Mac);
+                // remove item
+                HCommAir.SubUnRegisterTool(info);
+                // save tool list
+                HCommAir.SaveRegisterTools(tbPath.Text);
+            }
+        }
         private void lbRegisteredTools_SelectedIndexChanged(object sender, EventArgs e)
         {
+            // get sender
+            if (!(sender is ListBox list))
+                return;
             // get item
-            var item = (HcToolInfo)lbRegisteredTools.SelectedItem;
+            var item = (HcToolInfo) list.SelectedItem;
             // check item
             if (item == null)
                 return;
@@ -274,7 +350,6 @@ namespace HCommAirExample
                 // set selected tool
                 SelectedSession = HCommAir.GetSession(info);
 
-            
             Invoke(new EventHandler(delegate
             {
                 // set state
@@ -283,6 +358,9 @@ namespace HCommAirExample
         }
         private void OnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
         {
+            // check values
+            if (values == null || values.Length == 0)
+                return;
             // check mac address
             if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
                 return;
@@ -342,6 +420,40 @@ namespace HCommAirExample
                 tbLog.SelectionStart = Logger.Length;
                 tbLog.ScrollToCaret();
             }));
+        }
+        private void SendAllTools()
+        {
+            // tool buf
+            var buf = new List<byte>();
+            // add data
+            buf.Add(0x00);
+            buf.Add(0x00);
+            buf.Add(0x00);
+            buf.Add(0x00);
+            buf.Add(0x10);  // command
+            buf.Add(0x00);
+            buf.Add(0x00);
+            // get tools
+            foreach (var tool in HCommAir.GetRegisteredTools())
+            {
+                try
+                {
+                    using (var stream = new MemoryStream())
+                    {
+                        // get formatter
+                        var binFormat = new BinaryFormatter();
+                        // serialize
+                        binFormat.Serialize(stream, tool);
+                        // add buf
+                        buf.AddRange(stream.ToArray());
+                    }
+                }
+                catch (Exception e)
+                {
+                    // debug
+                    Console.WriteLine($@"{e.Message}");
+                }
+            }
         }
     }
 }

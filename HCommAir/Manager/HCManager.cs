@@ -135,7 +135,7 @@ namespace HCommAir.Manager
                 // get directory
                 var dir = Path.GetDirectoryName(path);
                 // check directory
-                if (!Directory.Exists(dir))
+                if (dir != null && !Directory.Exists(dir))
                     // create directory
                     Directory.CreateDirectory(dir);
 
@@ -306,31 +306,13 @@ namespace HCommAir.Manager
         /// Get all network interface
         /// </summary>
         /// <returns>interface list</returns>
-        public static List<NetworkInterface> GetAllInterfaces()
-        {
-            var list = new List<NetworkInterface>();
-            var nics = NetworkInterface.GetAllNetworkInterfaces();
-            // check interfaces
-            foreach (var item in nics)
-            {
-                var ipProp = item.GetIPProperties();
-                // most of VPN adapters will be skipped
-                if (!item.GetIPProperties().MulticastAddresses.Any())
-                    continue;
-                // multicast is meaningless for this type of connection
-                if (!item.SupportsMulticast)
-                    continue;
-                // this adapter is off or not connected
-                if (OperationalStatus.Up != item.OperationalStatus)
-                    continue;
-                // IPv4 is not configured on this adapter
-                if (item.GetIPProperties().GetIPv4Properties() == null)
-                    continue;
-                // add item
-                list.Add(item);
-            }
-            return list;
-        }
+        public static List<NetworkInterface> GetAllInterfaces() =>
+            (from item in NetworkInterface.GetAllNetworkInterfaces()
+                where item.GetIPProperties().MulticastAddresses.Any()
+                where item.SupportsMulticast
+                where OperationalStatus.Up == item.OperationalStatus
+                where item.GetIPProperties().GetIPv4Properties() != null
+                select item).ToList();
 
         private void ScannerOnToolAttach(HcToolInfo info)
         {

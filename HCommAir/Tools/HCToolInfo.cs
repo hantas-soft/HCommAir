@@ -64,9 +64,7 @@ namespace HCommAir.Tools
         /// <summary>
         /// Tool ip address or com port
         /// </summary>
-        public string Ip => Values[20] != 0 || Values[21] != 0 || Values[22] != 0
-            ? $@"{Values[20]}.{Values[21]}.{Values[22]}.{Values[23]}"
-            : $@"COM{Values[23]}";
+        public string Ip => $@"{Values[20]}.{Values[21]}.{Values[22]}.{Values[23]}";
         /// <summary>
         /// Tool port number
         /// </summary>
@@ -93,7 +91,7 @@ namespace HCommAir.Tools
         /// </summary>
         public enum ToolModelType
         {
-            None, MD, BM, BMT, MDT
+            None, MD, BM, BMT, MDT, BPT
         }
     }
 }

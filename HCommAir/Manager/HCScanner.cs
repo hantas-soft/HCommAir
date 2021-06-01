@@ -17,7 +17,7 @@ namespace HCommAir.Manager
         private readonly TimeSpan _timeoutSpan = new TimeSpan(0, 0, 0, 0, 100);
         private readonly IPAddress _mcIpAddr = IPAddress.Parse("239.66.77.43");
         private const int McPort = 53256;
-        private const int ScanPeriod = 1000;
+        private const int ScanPeriod = 100;
         private UdpClient Client { get; }
         private Timer ScanTimer { get; }
         private int TransactionId { get; set; }
@@ -95,6 +95,9 @@ namespace HCommAir.Manager
                 // create packet
                 var packet = new byte[]
                     {(byte) ((TransactionId >> 8) & 0xFF), (byte) (TransactionId & 0xFF), 0x00, 0x01};
+
+                // debug
+                //Console.WriteLine($@"Try scan...");
                 // send packet
                 Client.Send(packet, packet.Length, new IPEndPoint(_mcIpAddr, McPort));
 
@@ -119,6 +122,8 @@ namespace HCommAir.Manager
                 Monitor.Exit(SearchTools);                                                                                 
             }
         }
+
+        [Obsolete]
         private void ClientReceived(IAsyncResult ar)
         {
             // end receive point
@@ -133,20 +138,22 @@ namespace HCommAir.Manager
             // check header
             var id = recv[0] << 8 | recv[1];
             var cmd = (ScanCommand) (recv[2] << 8 | recv[3]);
+
             // check scan acknowledge and id and length
             if (cmd != ScanCommand.ScanAck || id != TransactionId || recv.Length - 4 != HcToolInfo.Count)
                 return;
             // set tool information
             var info = new HcToolInfo(recv.Skip(4));
             // check MD/MDTC
-            if (info.ToolType == HcToolInfo.ToolModelType.None ||
-                info.ToolType == HcToolInfo.ToolModelType.MD || info.ToolType == HcToolInfo.ToolModelType.MDT)
+            if (info.ToolType == HcToolInfo.ToolModelType.None)
                 return;
             // lock searched tool list
             if (!Monitor.TryEnter(SearchTools, _timeoutSpan))
                 return;
             try
             {
+                // debug
+                //Console.WriteLine($@"Acknowledge...");
                 // find tool
                 var tool = SearchTools.Find(x => x.Mac == info.Mac);
                 // check find tool

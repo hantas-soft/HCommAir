@@ -233,7 +233,7 @@ namespace HCommAirExample
                 if (port == string.Empty)
                     return;
                 // Connect manual tool
-                HCommAir.ConnectManualTool(port);
+                HCommAir.ConnectManualTool(port, 57600);
             }
             else
             {
@@ -243,7 +243,7 @@ namespace HCommAirExample
                 if (port == string.Empty)
                     return;
                 // Disconnect manual tool
-                HCommAir.DisConnectManualTool(port);
+                HCommAir.DisConnectManualTool(port, 57600);
                 // set text
                 btOpen.Text = @"Open";
             }

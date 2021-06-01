@@ -128,6 +128,9 @@ private void OnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
 
 ## History
 
+v1.0.9
+- Driver model update (PT->BPT)
+
 v1.0.7
 - HComm library version update (v1.2.7)
 - Save register file bug fixed

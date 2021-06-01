@@ -181,19 +181,59 @@ namespace HCommAir
         /// <summary>
         /// Connect manual tool
         /// </summary>
-        /// <param name="portName">port name</param>
-        public void ConnectManualTool(string portName)
+        /// <param name="target">target</param>
+        /// <param name="option">option</param>
+        /// <param name="id">id</param>
+        /// <param name="type">type</param>
+        public void ConnectManualTool(string target, int option = 115200, byte id = 1, CommType type = CommType.Serial)
         {
             var info = new HcToolInfo();
             // get values
             var values = info.GetValues();
-            // change com port
-            values[23] = Convert.ToByte(portName.Substring(3));
-            // change baud rate
-            values[24] = (57600 >> 8) & 0xFF;
-            values[25] = 57600 & 0xFF;
-            // change mac number
-            values[31] = values[23];
+            // check type
+            switch (type)
+            {
+                case CommType.None:
+                    break;
+                case CommType.Serial:
+                    // get com port
+                    values[23] = Convert.ToByte(target.Substring(3));
+                    // set baud rate
+                    values[26] = (byte) ((option >> 24) & 0xFF);
+                    values[27] = (byte) ((option >> 16) & 0xFF);
+                    values[28] = (byte) ((option >> 8) & 0xFF);
+                    values[29] = (byte) (option & 0xFF);
+                    // set mac number
+                    values[31] = values[23];
+                    // set id
+                    values[34] = id;
+                    break;
+                case CommType.Ethernet:
+                    // get ip address
+                    var ip = target.Split('.');
+                    for (var i = 0; i < ip.Length; i++)
+                        values[20 + i] = Convert.ToByte(ip[i]);
+                    // set port
+                    values[24] = (byte) ((option >> 8) & 0xFF);
+                    values[25] = (byte) (option & 0xFF);
+                    // set mac number
+                    values[31] = values[23];
+                    // set id
+                    values[34] = id;
+                    break;
+                case CommType.Usb:
+                    // set usb
+                    values[23] = 0x55;
+                    // set mac number
+                    values[31] = 0x55;
+                    // set id
+                    values[34] = id;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+            // set type
+            values[33] = (byte) type;
             // set values
             info.SetValues(values);
             // connect tool
@@ -202,19 +242,58 @@ namespace HCommAir
         /// <summary>
         /// Disconnect manual tool
         /// </summary>
-        /// <param name="portName"></param>
-        public void DisConnectManualTool(string portName)
+        /// <param name="target">target</param>
+        /// <param name="option">option</param>
+        /// <param name="id">id</param>
+        /// <param name="type">type</param>
+        public void DisConnectManualTool(string target, int option = 115200, byte id = 1, CommType type = CommType.Serial)
         {
             var info = new HcToolInfo();
             // get values
             var values = info.GetValues();
-            // change com port
-            values[23] = Convert.ToByte(portName.Substring(3));
-            // change mac number
-            values[31] = values[23];
+            // check type
+            switch (type)
+            {
+                case CommType.None:
+                    break;
+                case CommType.Serial:
+                    // get com port
+                    values[23] = Convert.ToByte(target.Substring(3));
+                    // set baud rate
+                    values[26] = (byte) ((option >> 24) & 0xFF);
+                    values[27] = (byte) ((option >> 16) & 0xFF);
+                    values[28] = (byte) ((option >> 8) & 0xFF);
+                    values[29] = (byte) (option & 0xFF);
+                    // set mac number
+                    values[31] = values[23];
+                    // set id
+                    values[34] = id;
+                    break;
+                case CommType.Ethernet:
+                    // get ip address
+                    var ip = target.Split('.');
+                    for (var i = 0; i < ip.Length; i++)
+                        values[20 + i] = Convert.ToByte(ip[i]);
+                    // set port
+                    values[24] = (byte) ((option >> 8) & 0xFF);
+                    values[24] = (byte) (option & 0xFF);
+                    // set mac number
+                    values[31] = values[23];
+                    // set id
+                    values[34] = id;
+                    break;
+                case CommType.Usb:
+                    // set mac number
+                    values[31] = 0x55;
+                    // set id
+                    values[34] = id;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
             // set values
             info.SetValues(values);
-            // disconnect tool
+            // connect tool
             OnToolRemoved(info);
         }
 
@@ -244,7 +323,7 @@ namespace HCommAir
                     Sessions.Add(session);                    
                 }
                 // setup
-                session.SetUp(info.Serial != string.Empty ? CommType.Ethernet : CommType.Serial);
+                session.SetUp(info.Serial != string.Empty ? CommType.Ethernet : (CommType) info.GetValues()[33]);
                 // set message queue size and block size
                 session.MaxQueueSize = MaxQueueSize;
                 session.MaxBlockSize = MaxBlockSize;

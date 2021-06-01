@@ -1,4 +1,6 @@
-﻿using HComm;
+﻿using System;
+using System.Linq;
+using HComm;
 using HComm.Common;
 using HCommAir.Tools;
 
@@ -40,6 +42,10 @@ namespace HCommAir.Manager
         /// Session queue count
         /// </summary>
         public int QueueCount => Session.QueueCount;
+        /// <summary>
+        /// Session device information
+        /// </summary>
+        public HCommInterface.DeviceInfo DeviceInfo => Session?.Information;
 
         /// <summary>
         /// Connection changed event handler delegate
@@ -92,7 +98,7 @@ namespace HCommAir.Manager
         public void SetUp(CommType type)
         {
             // check type
-            if (type == CommType.None || type == CommType.Usb)
+            if (type == CommType.None)
                 return;
             // set up session
             Session.SetUp(type);
@@ -110,8 +116,44 @@ namespace HCommAir.Manager
             if (EventSession.Type == CommType.Ethernet && EventSession.State == ConnectionState.Connected)
                 return;
 
+            var target = string.Empty;
+            var option = 0;
+            var id = ToolInfo.GetValues()[34];
+            // check type and get target
+            switch (Session.Type)
+            {
+                case CommType.Serial:
+                    // set target
+                    target = $@"COM{Convert.ToInt32(ToolInfo.Ip.Split('.')[3])}";
+                    // get baudrate values
+                    var baud = ToolInfo.GetValues().Skip(26).Take(4).ToArray();
+                    // set baudrate
+                    option = baud[0] << 24 | baud[1] << 16 | baud[2] << 8 | baud[3];
+                    break;
+                case CommType.Ethernet:
+                    // set target
+                    target = ToolInfo.Ip;
+                    // set port
+                    option = ToolInfo.Port;
+                    // check serial
+                    if (!string.IsNullOrWhiteSpace(ToolInfo.Serial))
+                        // set id
+                        id = 1;
+                    break;
+                case CommType.Usb:
+                    // set target
+                    target = @"USB";
+                    // set option
+                    option = 0x55;
+                    break;
+                case CommType.None:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
             // try connect session
-            Session.Connect(ToolInfo.Ip, ToolInfo.Port);
+            Session.Connect(target, option, id);
             // check event session type
             if (EventSession.Type == CommType.Ethernet)
                 // try connect event session
@@ -142,6 +184,7 @@ namespace HCommAir.Manager
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="count">count</param>
+        /// <param name="merge">merge state</param>
         /// <returns>result</returns>
         public bool GetParam(ushort addr, ushort count, bool merge = false) =>
             State == ConnectionState.Connected && Session.GetParam(addr, count, merge);

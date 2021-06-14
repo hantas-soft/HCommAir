@@ -13,11 +13,11 @@
     <PackageProjectUrl>https://github.com/KyungtackKim/HCommAir.git</PackageProjectUrl>
     <AssemblyVersion>1.0.9.1</AssemblyVersion>
     <FileVersion>1.0.9.1</FileVersion>
-    <Version>1.0.9.1-alpha.7</Version>
+    <Version>1.0.9.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="HComm" Version="1.2.8-alpha.1" />
+    <PackageReference Include="HComm" Version="1.2.8" />
   </ItemGroup>
 
   <ItemGroup>

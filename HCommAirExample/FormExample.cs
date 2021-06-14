@@ -81,13 +81,6 @@ namespace HCommAirExample
                 // refresh
                 lbRegisteredTools.Refresh();
             }
-            // debug
-            if (SelectedSession != null)
-            {
-                SelectedSession.GetParam(1, 500);
-                SelectedSession.GetParam(1001, 500);
-                SelectedSession.GetParam(2001, 500);
-            }
             // check graph state
             if (!GraphState || SelectedSession == null || SelectedSession.State != ConnectionState.Connected ||
                 !((DateTime.Now - GraphTime).TotalSeconds > 5))

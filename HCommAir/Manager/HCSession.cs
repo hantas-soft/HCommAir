@@ -252,7 +252,7 @@ namespace HCommAir.Manager
                     break;
                 case false when 
                     Session.State == ConnectionState.Disconnected &&
-                    (EventSession.Type != CommType.Ethernet || EventSession.State == ConnectionState.Disconnected):
+                    (EventSession.Type != CommType.Ethernet || EventSession.State != ConnectionState.Connected):
                     // change state
                     State = ConnectionState.Disconnected;
                     // event

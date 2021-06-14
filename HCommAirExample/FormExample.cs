@@ -35,7 +35,7 @@ namespace HCommAirExample
             foreach (var item in HComm.Device.HcSerial.GetPortNames())
                 // add port name
                 cbPorts.Items.Add(item);
-            // check interfcae list
+            // check interface list
             foreach (var item in HcManager.GetAllInterfaces())
                 // add interface item
                 cbInterface.Items.Add($@"{item.Name}:{item.Id}");
@@ -80,6 +80,13 @@ namespace HCommAirExample
                     RegisterTools.Add(info);
                 // refresh
                 lbRegisteredTools.Refresh();
+            }
+            // debug
+            if (SelectedSession != null)
+            {
+                SelectedSession.GetParam(1, 500);
+                SelectedSession.GetParam(1001, 500);
+                SelectedSession.GetParam(2001, 500);
             }
             // check graph state
             if (!GraphState || SelectedSession == null || SelectedSession.State != ConnectionState.Connected ||
@@ -228,22 +235,24 @@ namespace HCommAirExample
             if (btOpen.Text == @"Open")
             {
                 // get port name
-                var port = $@"{cbPorts.SelectedItem}";
+                // var port = $@"{cbPorts.SelectedItem}";
+                var port = $@"{tbIpAddr.Text}";
                 // check port name
                 if (port == string.Empty)
                     return;
                 // Connect manual tool
-                HCommAir.ConnectManualTool(port, 57600);
+                HCommAir.ConnectManualTool(port, 7762, 1, CommType.Ethernet);
             }
             else
             {
                 // get port name
-                var port = $@"{cbPorts.SelectedItem}";
+                // var port = $@"{cbPorts.SelectedItem}";
+                var port = $@"{tbIpAddr.Text}";
                 // check port name
                 if (port == string.Empty)
                     return;
                 // Disconnect manual tool
-                HCommAir.DisConnectManualTool(port, 57600);
+                HCommAir.DisConnectManualTool(port, 5000, 1, CommType.Ethernet);
                 // set text
                 btOpen.Text = @"Open";
             }
@@ -284,8 +293,8 @@ namespace HCommAirExample
         private void OnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
         {
             // check mac address
-            if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
-                return;
+            //if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
+                //return;
             // add log
             AddLog($@"== {info.Ip} : Cmd:{cmd} / Addr:{addr} / Len:{values.Length}");
             // check command

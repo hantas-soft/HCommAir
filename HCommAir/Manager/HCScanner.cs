@@ -17,10 +17,11 @@ namespace HCommAir.Manager
         private readonly TimeSpan _timeoutSpan = new TimeSpan(0, 0, 0, 0, 100);
         private readonly IPAddress _mcIpAddr = IPAddress.Parse("239.66.77.43");
         private const int McPort = 53256;
-        private const int ScanPeriod = 100;
+        private const int ScanPeriod = 1000;
         private UdpClient Client { get; }
         private Timer ScanTimer { get; }
         private int TransactionId { get; set; }
+        private DateTime TransactionTime { get; set; }
         private List<HcToolInfo> SearchTools { get; } = new List<HcToolInfo>();
         
         /// <summary>
@@ -45,9 +46,11 @@ namespace HCommAir.Manager
             Client = new UdpClient(new IPEndPoint(IPAddress.Any, McPort));
             ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
         }
+
         /// <summary>
         /// HCommAir tool scanning start
         /// </summary>
+        [Obsolete]
         public void Start()
         {
             // clear searched tool list
@@ -85,10 +88,8 @@ namespace HCommAir.Manager
         
         private void ScanTimer_Tick(object state)
         {
-            // lock searching tool list
-            if(!Monitor.TryEnter(SearchTools, _timeoutSpan))
-                return;
-            try
+            // check transaction time
+            if((DateTime.Now - TransactionTime).TotalMilliseconds > 3000)
             {
                 // update id
                 TransactionId += 1;
@@ -97,10 +98,17 @@ namespace HCommAir.Manager
                     {(byte) ((TransactionId >> 8) & 0xFF), (byte) (TransactionId & 0xFF), 0x00, 0x01};
 
                 // debug
-                //Console.WriteLine($@"Try scan...");
+                // Console.WriteLine($@"Send time: {DateTime.Now:hh:mm:ss:fff}");
                 // send packet
                 Client.Send(packet, packet.Length, new IPEndPoint(_mcIpAddr, McPort));
-
+                // reset transaction time
+                TransactionTime = DateTime.Now;
+            }
+            // lock searching tool list
+            if(!Monitor.TryEnter(SearchTools, _timeoutSpan))
+                return;
+            try
+            {
                 // check timeout
                 for (var i = 0; i < SearchTools.Count; i++)
                 {
@@ -108,8 +116,7 @@ namespace HCommAir.Manager
                     if (!SearchTools[i].CheckTime()) 
                         continue;
                     // debug console
-                    Console.WriteLine($@"Detach Tool: {SearchTools[i].Ip}");
-                    Console.WriteLine($@"Detach Tool: {SearchTools[i].Mac}");
+                    Console.WriteLine($@"[{DateTime.Now:hh:mm:ss:fff}] Detach Tool: {SearchTools[i].Ip}");
                     // detach
                     ToolDetach?.Invoke(SearchTools[i]);
                     // remove tool
@@ -159,11 +166,8 @@ namespace HCommAir.Manager
                 // check find tool
                 if (tool == null)
                 {
-                    // set timeout time
-                    info.Timeout = ScanPeriod + 1000;
                     // debug console
-                    Console.WriteLine($@"Attach Tool: {info.Ip}");
-                    Console.WriteLine($@"Attach Tool: {info.Mac}");
+                    Console.WriteLine($@"[{DateTime.Now:hh:mm:ss:fff}] Attach Tool: {info.Ip}");
                     // add tool
                     SearchTools.Add(info);
                     // attached

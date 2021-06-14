@@ -12,7 +12,7 @@ namespace HCommAir.Tools
         /// <summary>
         /// Timeout limit time (ms)
         /// </summary>
-        public int Timeout { get; set; } = 1000;
+        public int Timeout { get; set; } = 10000;
         /// <summary>
         /// Set time now
         /// </summary>

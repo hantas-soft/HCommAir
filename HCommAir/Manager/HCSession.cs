@@ -197,6 +197,12 @@ namespace HCommAir.Manager
         public bool SetParam(ushort addr, ushort value) =>
             State == ConnectionState.Connected && Session.SetParam(addr, value);
         /// <summary>
+        /// Get tool information
+        /// </summary>
+        /// <returns>result</returns>
+        public bool GetInfo() =>
+            State == ConnectionState.Connected && Session.GetInfo();
+        /// <summary>
         /// Set tool real-time monitoring state
         /// </summary>
         /// <param name="addr">address</param>
@@ -212,6 +218,14 @@ namespace HCommAir.Manager
         /// <returns>result</returns>
         public bool SetGraph(ushort addr = 4100, ushort state = 1) =>
             State == ConnectionState.Connected && Session.SetGraph(addr, state);
+        /// <summary>
+        /// Get tool graph monitoring state
+        /// </summary>
+        /// <param name="addr">address</param>
+        /// <param name="state">state</param>
+        /// <returns>result</returns>
+        public bool GetGraph(ushort addr = 4200, ushort state = 1) =>
+            State == ConnectionState.Connected && Session.GetGraph(addr, state);
         /// <summary>
         /// Get tool current state
         /// </summary>

@@ -175,6 +175,8 @@ namespace HCommAir.Manager
                 }
                 else
                 {
+                    // change state
+                    tool.SetValues(recv.Skip(4));
                     // refresh tool
                     tool.ResetTime();
                     // alive

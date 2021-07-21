@@ -77,7 +77,7 @@ namespace HCommAir.Tools
         /// <summary>
         /// Tool available connection check
         /// </summary>
-        public bool AvailableConnection => Values[32] == 0;
+        public string AvailableConnection => Values[32] == 0 ? "O" : "X";
         /// <summary>
         /// Tool firmware version
         /// </summary>
@@ -91,7 +91,7 @@ namespace HCommAir.Tools
         /// </summary>
         public enum ToolModelType
         {
-            None, MD, BM, BMT, MDT, BPT
+            None, MD, BM, BMT, MDT, BPT, MDTPlus
         }
     }
 }

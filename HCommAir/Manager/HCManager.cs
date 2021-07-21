@@ -407,7 +407,7 @@ namespace HCommAir.Manager
                 if (scan == null && register == null)
                     // add scan tool
                     ScannedTools.Add(info);
-                else if(register != null)
+                else if (register != null)
                     // event
                     ToolAlive?.Invoke(info);
             }

@@ -322,7 +322,7 @@ namespace HCommAirExample
                 case Command.Error:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(cmd), cmd, null);
+                    return;
             }
         }
         private void AddLog(string log, bool lineFeed = false)

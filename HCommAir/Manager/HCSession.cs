@@ -46,6 +46,10 @@ namespace HCommAir.Manager
         /// Session device information
         /// </summary>
         public HCommInterface.DeviceInfo DeviceInfo => Session?.Information;
+        /// <summary>
+        /// Session connection type
+        /// </summary>
+        public CommType SessionType { get; set; }
 
         /// <summary>
         /// Connection changed event handler delegate
@@ -100,9 +104,11 @@ namespace HCommAir.Manager
             // check type
             if (type == CommType.None)
                 return;
+            // set type
+            SessionType = type;
             // set up session
-            Session.SetUp(type);
-            EventSession.SetUp(type);
+            Session.SetUp(SessionType);
+            EventSession.SetUp(SessionType);
         }
         /// <summary>
         /// Connect sessions
@@ -149,7 +155,7 @@ namespace HCommAir.Manager
                 case CommType.None:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    return;
             }
 
             // try connect session

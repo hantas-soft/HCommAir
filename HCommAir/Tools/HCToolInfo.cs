@@ -13,7 +13,7 @@ namespace HCommAir.Tools
         /// <summary>
         /// Tool information value count
         /// </summary>
-        public static int Count { get; } = 36;
+        public static int Count => 36;
         /// <summary>
         /// Constructor
         /// </summary>

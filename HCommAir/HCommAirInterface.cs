@@ -230,7 +230,7 @@ namespace HCommAir
                     values[34] = id;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                    return;
             }
             // set type
             values[33] = (byte) type;
@@ -289,7 +289,7 @@ namespace HCommAir
                     values[34] = id;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+                    return;
             }
             // set values
             info.SetValues(values);

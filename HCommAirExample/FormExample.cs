@@ -177,9 +177,9 @@ namespace HCommAirExample
                 return;
             // check sender
             if (sender == btStartMonitor)
-                SelectedSession.SetEventMonitor();
+                SelectedSession.SetRealTime();
             else if (sender == btStopMonitor)
-                SelectedSession.SetEventMonitor(4015, 0);
+                SelectedSession.SetRealTime(4002, 0);
         }
         private void btGraphAction_Click(object sender, EventArgs e)
         {
@@ -228,24 +228,22 @@ namespace HCommAirExample
             if (btOpen.Text == @"Open")
             {
                 // get port name
-                // var port = $@"{cbPorts.SelectedItem}";
-                var port = $@"{tbIpAddr.Text}";
+                var port = $@"{cbPorts.SelectedItem}";
                 // check port name
                 if (port == string.Empty)
                     return;
                 // Connect manual tool
-                HCommAir.ConnectManualTool(port, 7762, 1, CommType.Ethernet);
+                HCommAir.ConnectManualTool(port, 115200, 1, CommType.Serial);
             }
             else
             {
                 // get port name
-                // var port = $@"{cbPorts.SelectedItem}";
-                var port = $@"{tbIpAddr.Text}";
+                var port = $@"{cbPorts.SelectedItem}";
                 // check port name
                 if (port == string.Empty)
                     return;
                 // Disconnect manual tool
-                HCommAir.DisConnectManualTool(port, 5000, 1, CommType.Ethernet);
+                HCommAir.DisConnectManualTool(port, 115200, 1, CommType.Serial);
                 // set text
                 btOpen.Text = @"Open";
             }

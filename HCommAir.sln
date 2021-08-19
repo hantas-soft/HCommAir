@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "HCommAirSetup", "HCommAirSetup\HCommAirSetup.vdproj", "{44431ABD-7938-4817-8BF3-A5609C6ABEDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,8 @@ Global
 		{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{189A6049-3580-4C6E-A76D-EB5C6EA18EDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44431ABD-7938-4817-8BF3-A5609C6ABEDF}.Debug|Any CPU.ActiveCfg = Debug
+		{44431ABD-7938-4817-8BF3-A5609C6ABEDF}.Release|Any CPU.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

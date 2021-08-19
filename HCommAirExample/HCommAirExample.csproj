@@ -81,10 +81,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HCommAir\HCommAir.csproj">
-      <Project>{614a6559-8884-4793-a208-8fa2b95115f3}</Project>
-      <Name>HCommAir</Name>
-    </ProjectReference>
+    <PackageReference Include="HCommAir">
+      <Version>1.0.9.13</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -75,7 +75,8 @@ namespace HCommAirExample
             this.cbPorts = new System.Windows.Forms.ComboBox();
             this.cbInterface = new System.Windows.Forms.ComboBox();
             this.label5 = new System.Windows.Forms.Label();
-            this.tbIpAddr = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
             lbLog = new System.Windows.Forms.Label();
             lbGOption = new System.Windows.Forms.Label();
             lbSampling = new System.Windows.Forms.Label();
@@ -234,7 +235,7 @@ namespace HCommAirExample
             // 
             // btPath
             // 
-            this.btPath.Location = new System.Drawing.Point(133, 11);
+            this.btPath.Location = new System.Drawing.Point(184, 11);
             this.btPath.Name = "btPath";
             this.btPath.Size = new System.Drawing.Size(65, 23);
             this.btPath.TabIndex = 27;
@@ -244,7 +245,7 @@ namespace HCommAirExample
             // 
             // tbPath
             // 
-            this.tbPath.Location = new System.Drawing.Point(12, 12);
+            this.tbPath.Location = new System.Drawing.Point(63, 13);
             this.tbPath.Name = "tbPath";
             this.tbPath.Size = new System.Drawing.Size(115, 21);
             this.tbPath.TabIndex = 26;
@@ -560,7 +561,7 @@ namespace HCommAirExample
             // cbPorts
             // 
             this.cbPorts.FormattingEnabled = true;
-            this.cbPorts.Location = new System.Drawing.Point(361, 12);
+            this.cbPorts.Location = new System.Drawing.Point(361, 14);
             this.cbPorts.Name = "cbPorts";
             this.cbPorts.Size = new System.Drawing.Size(121, 20);
             this.cbPorts.TabIndex = 51;
@@ -583,20 +584,31 @@ namespace HCommAirExample
             this.label5.TabIndex = 53;
             this.label5.Text = "Interface";
             // 
-            // tbIpAddr
+            // label6
             // 
-            this.tbIpAddr.Location = new System.Drawing.Point(240, 11);
-            this.tbIpAddr.Name = "tbIpAddr";
-            this.tbIpAddr.Size = new System.Drawing.Size(115, 21);
-            this.tbIpAddr.TabIndex = 54;
-            this.tbIpAddr.Text = "192.168.1.100";
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(262, 17);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(96, 12);
+            this.label6.TabIndex = 54;
+            this.label6.Text = "Manual connect";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(12, 17);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(50, 12);
+            this.label7.TabIndex = 55;
+            this.label7.Text = "Tool file";
             // 
             // FormExample
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(968, 501);
-            this.Controls.Add(this.tbIpAddr);
+            this.Controls.Add(this.label7);
+            this.Controls.Add(this.label6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.cbInterface);
             this.Controls.Add(this.cbPorts);
@@ -678,7 +690,8 @@ namespace HCommAirExample
         private System.Windows.Forms.ComboBox cbPorts;
         private System.Windows.Forms.ComboBox cbInterface;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.TextBox tbIpAddr;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.Label label7;
     }
 }
 

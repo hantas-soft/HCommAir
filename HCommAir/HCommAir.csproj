@@ -14,7 +14,7 @@
         <AssemblyVersion>1.0.9.15</AssemblyVersion>
         <FileVersion>1.0.9.15</FileVersion>
         <Version>1.0.9.15</Version>
-        <PackageVersion>1.0.9.14</PackageVersion>
+        <PackageVersion>1.0.9.15</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>

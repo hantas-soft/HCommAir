@@ -1,45 +1,32 @@
 ﻿using System;
-using System.Net;
-using System.Linq;
-using System.Threading;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Threading;
 using HCommAir.Tools;
 
 namespace HCommAir.Manager
 {
     /// <summary>
-    /// HCommAir Tool scanner
+    ///     HCommAir Tool scanner
     /// </summary>
     public class HcScanner
     {
-        private readonly TimeSpan _timeoutSpan = new TimeSpan(0, 0, 0, 0, 100);
-        private readonly IPAddress _mcIpAddr = IPAddress.Parse("239.66.77.43");
-        private const int McPort = 53256;
-        private const int ScanPeriod = 1000;
-        private UdpClient Client { get; }
-        private Timer ScanTimer { get; }
-        private int TransactionId { get; set; }
-        private DateTime TransactionTime { get; set; }
-        private List<HcToolInfo> SearchTools { get; } = new List<HcToolInfo>();
-        
         /// <summary>
-        /// HCommAir tool scanning status
-        /// </summary>
-        public bool IsScanning { get; set; }
-        /// <summary>
-        /// Tool searching delegate
+        ///     Tool searching delegate
         /// </summary>
         /// <param name="info">tool information</param>
         public delegate void MulticastEventHandler(HcToolInfo info);
+
+        private const int McPort = 53256;
+        private const int ScanPeriod = 1000;
+        private readonly IPAddress _mcIpAddr = IPAddress.Parse("239.66.77.43");
+        private readonly TimeSpan _timeoutSpan = new TimeSpan(0, 0, 0, 0, 100);
+
         /// <summary>
-        /// Tool searching event
-        /// </summary>
-        public event MulticastEventHandler ToolAttach, ToolDetach, ToolAlive;
-        
-        /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public HcScanner()
         {
@@ -47,8 +34,24 @@ namespace HCommAir.Manager
             ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
         }
 
+        private UdpClient Client { get; }
+        private Timer ScanTimer { get; }
+        private int TransactionId { get; set; }
+        private DateTime TransactionTime { get; set; }
+        private List<HcToolInfo> SearchTools { get; } = new List<HcToolInfo>();
+
         /// <summary>
-        /// HCommAir tool scanning start
+        ///     HCommAir tool scanning status
+        /// </summary>
+        public bool IsScanning { get; set; }
+
+        /// <summary>
+        ///     Tool searching event
+        /// </summary>
+        public event MulticastEventHandler ToolAttach, ToolDetach, ToolAlive;
+
+        /// <summary>
+        ///     HCommAir tool scanning start
         /// </summary>
         [Obsolete]
         public void Start()
@@ -60,12 +63,13 @@ namespace HCommAir.Manager
             // start scan timer
             ScanTimer.Change(0, ScanPeriod);
             // begin receive
-            Client.BeginReceive(ClientReceived, null);
+            Client.BeginReceive(ClientReceived, Client);
             // set scan status
             IsScanning = true;
         }
+
         /// <summary>
-        /// HCommAir tool scanning stop
+        ///     HCommAir tool scanning stop
         /// </summary>
         public void Stop()
         {
@@ -76,8 +80,9 @@ namespace HCommAir.Manager
             // set scan status
             IsScanning = false;
         }
+
         /// <summary>
-        /// HCommAir interface properties change
+        ///     HCommAir interface properties change
         /// </summary>
         /// <param name="p">interface properties</param>
         public void ChangeInterfaceProp(IPv4InterfaceProperties p)
@@ -85,17 +90,17 @@ namespace HCommAir.Manager
             Client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface,
                 IPAddress.HostToNetworkOrder(p.Index));
         }
-        
+
         private void ScanTimer_Tick(object state)
         {
             // check transaction time
-            if((DateTime.Now - TransactionTime).TotalMilliseconds > 3000)
+            if ((DateTime.Now - TransactionTime).TotalMilliseconds > 3000)
             {
                 // update id
                 TransactionId += 1;
                 // create packet
                 var packet = new byte[]
-                    {(byte) ((TransactionId >> 8) & 0xFF), (byte) (TransactionId & 0xFF), 0x00, 0x01};
+                    { (byte)((TransactionId >> 8) & 0xFF), (byte)(TransactionId & 0xFF), 0x00, 0x01 };
 
                 // debug
                 // Console.WriteLine($@"Send time: {DateTime.Now:hh:mm:ss:fff}");
@@ -104,8 +109,9 @@ namespace HCommAir.Manager
                 // reset transaction time
                 TransactionTime = DateTime.Now;
             }
+
             // lock searching tool list
-            if(!Monitor.TryEnter(SearchTools, _timeoutSpan))
+            if (!Monitor.TryEnter(SearchTools, _timeoutSpan))
                 return;
             try
             {
@@ -113,7 +119,7 @@ namespace HCommAir.Manager
                 for (var i = 0; i < SearchTools.Count; i++)
                 {
                     // check state update
-                    if (!SearchTools[i].CheckTime()) 
+                    if (!SearchTools[i].CheckTime())
                         continue;
                     // debug console
                     Console.WriteLine($@"[{DateTime.Now:hh:mm:ss:fff}] Detach Tool: {SearchTools[i].Ip}");
@@ -126,7 +132,7 @@ namespace HCommAir.Manager
             finally
             {
                 // unlock
-                Monitor.Exit(SearchTools);                                                                                 
+                Monitor.Exit(SearchTools);
             }
         }
 
@@ -136,21 +142,21 @@ namespace HCommAir.Manager
             // end receive point
             var endPoint = new IPEndPoint(IPAddress.Any, McPort);
             // receive data
-            var recv = Client.EndReceive(ar, ref endPoint);
+            var receive = Client.EndReceive(ar, ref endPoint);
             // begin receive
-            Client.BeginReceive(ClientReceived, null);
+            Client.BeginReceive(ClientReceived, Client);
             // check length
-            if (recv.Length < 4)
+            if (receive.Length < 4)
                 return;
             // check header
-            var id = recv[0] << 8 | recv[1];
-            var cmd = (ScanCommand) (recv[2] << 8 | recv[3]);
+            var id = (receive[0] << 8) | receive[1];
+            var cmd = (ScanCommand)((receive[2] << 8) | receive[3]);
 
             // check scan acknowledge and id and length
-            if (cmd != ScanCommand.ScanAck || id != TransactionId || recv.Length - 4 != HcToolInfo.Count)
+            if (cmd != ScanCommand.ScanAck || id != TransactionId || receive.Length - 4 != HcToolInfo.Count)
                 return;
             // set tool information
-            var info = new HcToolInfo(recv.Skip(4));
+            var info = new HcToolInfo(receive.Skip(4));
             // check MD/MDTC
             if (info.ToolType == HcToolInfo.ToolModelType.None)
                 return;
@@ -176,7 +182,7 @@ namespace HCommAir.Manager
                 else
                 {
                     // change state
-                    tool.SetValues(recv.Skip(4));
+                    tool.SetValues(receive.Skip(4));
                     // refresh tool
                     tool.ResetTime();
                     // alive
@@ -189,7 +195,7 @@ namespace HCommAir.Manager
                 Monitor.Exit(SearchTools);
             }
         }
-        
+
         private enum ScanCommand
         {
             Scan = 0x01,
@@ -198,6 +204,7 @@ namespace HCommAir.Manager
             ScanAck = 0x82,
             SearchAck = 0x83
         }
+
         private enum CauseType
         {
             Connected = 0x01,

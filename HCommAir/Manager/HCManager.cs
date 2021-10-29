@@ -1,36 +1,28 @@
 ﻿using System;
-using System.Threading;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.NetworkInformation;
-using HCommAir.Tools;
 using System.Linq;
+using System.Net.NetworkInformation;
+using System.Threading;
+using HCommAir.Tools;
 
 namespace HCommAir.Manager
 {
     /// <summary>
-    /// HCommAir tool managing class
+    ///     HCommAir tool managing class
     /// </summary>
     public class HcManager
     {
-        private const int Timeout = 500;
-
-        private HcScanner Scanner { get; } = new HcScanner();
-        private List<HcToolInfo> ScannedTools { get; } = new List<HcToolInfo>();
-        private List<HcToolInfo> RegisteredTools { get; } = new List<HcToolInfo>();
-
         /// <summary>
-        /// Tool registered event delegate
+        ///     Tool registered event delegate
         /// </summary>
         /// <param name="info">tool information</param>
         public delegate void RegisterToolHandler(HcToolInfo info);
-        /// <summary>
-        /// Tool registered/unregistered event
-        /// </summary>
-        public event RegisterToolHandler ToolAdded, ToolRemoved, ToolConnect, ToolDisconnect, ToolAlive;
+
+        private const int Timeout = 500;
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public HcManager()
         {
@@ -39,8 +31,18 @@ namespace HCommAir.Manager
             Scanner.ToolAlive += ScannerOnToolAlive;
             Scanner.ToolAttach += ScannerOnToolAttach;
         }
+
+        private HcScanner Scanner { get; } = new HcScanner();
+        private List<HcToolInfo> ScannedTools { get; } = new List<HcToolInfo>();
+        private List<HcToolInfo> RegisteredTools { get; } = new List<HcToolInfo>();
+
         /// <summary>
-        /// Tool register
+        ///     Tool registered/unregistered event
+        /// </summary>
+        public event RegisterToolHandler ToolAdded, ToolRemoved, ToolConnect, ToolDisconnect, ToolAlive;
+
+        /// <summary>
+        ///     Tool register
         /// </summary>
         /// <param name="info">Tool information</param>
         /// <returns>result</returns>
@@ -56,7 +58,7 @@ namespace HCommAir.Manager
                 // check lock taken
                 if (!lockTakenScan || !lockTakenRegister)
                     return false;
-               
+
                 // get register tool
                 if (FindToolInfo(RegisteredTools, info.Mac) != null)
                     return false;
@@ -66,7 +68,7 @@ namespace HCommAir.Manager
                 RegisteredTools.Add(info);
                 // tool added event
                 ToolAdded?.Invoke(info);
-                
+
                 return true;
             }
             finally
@@ -78,8 +80,9 @@ namespace HCommAir.Manager
                     Monitor.Exit(RegisteredTools);
             }
         }
+
         /// <summary>
-        /// Tool unRegister
+        ///     Tool unRegister
         /// </summary>
         /// <param name="info">Tool information</param>
         /// <returns>result</returns>
@@ -95,16 +98,16 @@ namespace HCommAir.Manager
                 // check lock taken
                 if (!lockTakenScan || !lockTakenRegister)
                     return false;
-               
+
                 // get register tool
-                var register = FindToolInfo(RegisteredTools, info.Mac); 
+                var register = FindToolInfo(RegisteredTools, info.Mac);
                 if (register == null)
                     return false;
                 // remove register tool
                 RegisteredTools.Remove(register);
                 // tool removed event
                 ToolRemoved?.Invoke(info);
-                
+
                 return true;
             }
             finally
@@ -116,8 +119,9 @@ namespace HCommAir.Manager
                     Monitor.Exit(RegisteredTools);
             }
         }
+
         /// <summary>
-        /// Registered tools save binary file
+        ///     Registered tools save binary file
         /// </summary>
         /// <param name="path">file path</param>
         /// <returns>result</returns>
@@ -168,8 +172,9 @@ namespace HCommAir.Manager
                     Monitor.Exit(RegisteredTools);
             }
         }
+
         /// <summary>
-        /// Registered tools load binary file
+        ///     Registered tools load binary file
         /// </summary>
         /// <param name="path">file path</param>
         /// <returns>result</returns>
@@ -233,20 +238,32 @@ namespace HCommAir.Manager
         }
 
         /// <summary>
-        /// Multicast scanning start
+        ///     Multicast scanning start
         /// </summary>
-        public void Start() => Scanner.Start();
+        public void Start()
+        {
+            Scanner.Start();
+        }
+
         /// <summary>
-        /// Multicast scanning stop
+        ///     Multicast scanning stop
         /// </summary>
-        public void Stop() => Scanner.Stop();
+        public void Stop()
+        {
+            Scanner.Stop();
+        }
+
         /// <summary>
-        /// Multicast scanning interface properties change
+        ///     Multicast scanning interface properties change
         /// </summary>
         /// <param name="p"></param>
-        public void ChangeInterfaceProp(IPv4InterfaceProperties p) => Scanner.ChangeInterfaceProp(p);
+        public void ChangeInterfaceProp(IPv4InterfaceProperties p)
+        {
+            Scanner.ChangeInterfaceProp(p);
+        }
+
         /// <summary>
-        /// Get registered tools list
+        ///     Get registered tools list
         /// </summary>
         /// <returns>tool list</returns>
         public List<HcToolInfo> GetRegisteredTools()
@@ -273,8 +290,9 @@ namespace HCommAir.Manager
                     Monitor.Exit(RegisteredTools);
             }
         }
+
         /// <summary>
-        /// Get scanned tools list
+        ///     Get scanned tools list
         /// </summary>
         /// <returns>tool list</returns>
         public List<HcToolInfo> GetScannedTools()
@@ -303,16 +321,18 @@ namespace HCommAir.Manager
         }
 
         /// <summary>
-        /// Get all network interface
+        ///     Get all network interface
         /// </summary>
         /// <returns>interface list</returns>
-        public static List<NetworkInterface> GetAllInterfaces() =>
-            (from item in NetworkInterface.GetAllNetworkInterfaces()
+        public static List<NetworkInterface> GetAllInterfaces()
+        {
+            return (from item in NetworkInterface.GetAllNetworkInterfaces()
                 where item.GetIPProperties().MulticastAddresses.Any()
                 where item.SupportsMulticast
                 where OperationalStatus.Up == item.OperationalStatus
                 where item.GetIPProperties().GetIPv4Properties() != null
                 select item).ToList();
+        }
 
         private void ScannerOnToolAttach(HcToolInfo info)
         {
@@ -326,7 +346,7 @@ namespace HCommAir.Manager
                 // check lock taken
                 if (!lockTakenScan || !lockTakenRegister)
                     return;
-               
+
                 // get tools
                 var register = FindToolInfo(RegisteredTools, info.Mac);
                 var scan = FindToolInfo(ScannedTools, info.Mac);
@@ -354,6 +374,7 @@ namespace HCommAir.Manager
                     Monitor.Exit(RegisteredTools);
             }
         }
+
         private void ScannerOnToolDetach(HcToolInfo info)
         {
             var lockTakenScan = false;
@@ -366,7 +387,7 @@ namespace HCommAir.Manager
                 // check lock taken
                 if (!lockTakenScan || !lockTakenRegister)
                     return;
-               
+
                 // get tools
                 var register = FindToolInfo(RegisteredTools, info.Mac);
                 var scan = FindToolInfo(ScannedTools, info.Mac);
@@ -387,6 +408,7 @@ namespace HCommAir.Manager
                     Monitor.Exit(RegisteredTools);
             }
         }
+
         private void ScannerOnToolAlive(HcToolInfo info)
         {
             var lockTakenScan = false;
@@ -399,7 +421,7 @@ namespace HCommAir.Manager
                 // check lock taken
                 if (!lockTakenScan || !lockTakenRegister)
                     return;
-               
+
                 // get tools
                 var register = FindToolInfo(RegisteredTools, info.Mac);
                 var scan = FindToolInfo(ScannedTools, info.Mac);
@@ -420,7 +442,10 @@ namespace HCommAir.Manager
                     Monitor.Exit(RegisteredTools);
             }
         }
-        private static HcToolInfo FindToolInfo(List<HcToolInfo> list, string mac) 
-            => list.Find(x => x.Mac == mac);
+
+        private static HcToolInfo FindToolInfo(List<HcToolInfo> list, string mac)
+        {
+            return list.Find(x => x.Mac == mac);
+        }
     }
 }

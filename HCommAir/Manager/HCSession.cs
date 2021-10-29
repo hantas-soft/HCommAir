@@ -7,75 +7,28 @@ using HCommAir.Tools;
 namespace HCommAir.Manager
 {
     /// <summary>
-    /// HCommAir tool session class
+    ///     HCommAir tool session class
     /// </summary>
     public class HcSession
     {
-        private HCommInterface Session { get; }
-        private HCommInterface EventSession { get; }
-        
         /// <summary>
-        /// Tool information
-        /// </summary>
-        public HcToolInfo ToolInfo { get; }
-        /// <summary>
-        /// Connection state
-        /// </summary>
-        public ConnectionState State { get; private set; }
-        /// <summary>
-        /// Session max queue size
-        /// </summary>
-        public int MaxQueueSize
-        {
-            get => Session.MaxQueueSize;
-            set => Session.MaxQueueSize = value;
-        }
-        /// <summary>
-        /// Session max block size
-        /// </summary>
-        public int MaxBlockSize
-        {
-            get => Session.MaxParamBlock;
-            set => Session.MaxParamBlock = value;
-        }
-        /// <summary>
-        /// Session queue count
-        /// </summary>
-        public int QueueCount => Session.QueueCount;
-        /// <summary>
-        /// Session device information
-        /// </summary>
-        public HCommInterface.DeviceInfo DeviceInfo => Session?.Information;
-        /// <summary>
-        /// Session connection type
-        /// </summary>
-        public CommType SessionType { get; set; }
-
-        /// <summary>
-        /// Connection changed event handler delegate
+        ///     Connection changed event handler delegate
         /// </summary>
         /// <param name="info">tool information</param>
         /// <param name="state">connection state</param>
         public delegate void ConnectionHandler(HcToolInfo info, ConnectionState state);
+
         /// <summary>
-        /// Received event handler delegate 
+        ///     Received event handler delegate
         /// </summary>
         /// <param name="info">tool information</param>
         /// <param name="cmd">command</param>
         /// <param name="addr">address</param>
         /// <param name="values">values</param>
         public delegate void ReceivedHandler(HcToolInfo info, Command cmd, int addr, int[] values);
+
         /// <summary>
-        /// Connection changed event
-        /// </summary>
-        public event ConnectionHandler ConnectionChanged;
-        /// <summary>
-        /// Received event
-        /// </summary>
-        public event ReceivedHandler SessionReceived, EventReceived;
-        
-        /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         /// <param name="info">Tool information</param>
         public HcSession(HcToolInfo info)
@@ -95,8 +48,65 @@ namespace HCommAir.Manager
             // set option
             EventSession.AutoRequestInfo = false;
         }
+
+        private HCommInterface Session { get; }
+        private HCommInterface EventSession { get; }
+
         /// <summary>
-        /// SetUp session
+        ///     Tool information
+        /// </summary>
+        public HcToolInfo ToolInfo { get; }
+
+        /// <summary>
+        ///     Connection state
+        /// </summary>
+        public ConnectionState State { get; private set; }
+
+        /// <summary>
+        ///     Session max queue size
+        /// </summary>
+        public int MaxQueueSize
+        {
+            get => Session.MaxQueueSize;
+            set => Session.MaxQueueSize = value;
+        }
+
+        /// <summary>
+        ///     Session max block size
+        /// </summary>
+        public int MaxBlockSize
+        {
+            get => Session.MaxParamBlock;
+            set => Session.MaxParamBlock = value;
+        }
+
+        /// <summary>
+        ///     Session queue count
+        /// </summary>
+        public int QueueCount => Session.QueueCount;
+
+        /// <summary>
+        ///     Session device information
+        /// </summary>
+        public HCommInterface.DeviceInfo DeviceInfo => Session?.Information;
+
+        /// <summary>
+        ///     Session connection type
+        /// </summary>
+        public CommType SessionType { get; set; }
+
+        /// <summary>
+        ///     Connection changed event
+        /// </summary>
+        public event ConnectionHandler ConnectionChanged;
+
+        /// <summary>
+        ///     Received event
+        /// </summary>
+        public event ReceivedHandler SessionReceived, EventReceived;
+
+        /// <summary>
+        ///     SetUp session
         /// </summary>
         /// <param name="type">Session type</param>
         public void SetUp(CommType type)
@@ -110,8 +120,9 @@ namespace HCommAir.Manager
             Session.SetUp(SessionType);
             EventSession.SetUp(SessionType);
         }
+
         /// <summary>
-        /// Connect sessions
+        ///     Connect sessions
         /// </summary>
         /// <returns>result</returns>
         public void Connect()
@@ -129,12 +140,13 @@ namespace HCommAir.Manager
             switch (Session.Type)
             {
                 case CommType.Serial:
+                    var ip = ToolInfo.Ip.Split('.');
                     // set target
-                    target = $@"COM{Convert.ToInt32(ToolInfo.Ip.Split('.')[3])}";
+                    target = $@"COM{(Convert.ToInt32(ip[2]) << 8) | Convert.ToInt32(ip[3])}";
                     // get baudrate values
                     var baud = ToolInfo.GetValues().Skip(26).Take(4).ToArray();
                     // set baudrate
-                    option = baud[0] << 24 | baud[1] << 16 | baud[2] << 8 | baud[3];
+                    option = (baud[0] << 24) | (baud[1] << 16) | (baud[2] << 8) | baud[3];
                     break;
                 case CommType.Ethernet:
                     // set target
@@ -168,8 +180,9 @@ namespace HCommAir.Manager
             // change state
             State = ConnectionState.Connecting;
         }
+
         /// <summary>
-        /// Disconnect sessions
+        ///     Disconnect sessions
         /// </summary>
         public void Disconnect()
         {
@@ -186,91 +199,117 @@ namespace HCommAir.Manager
         }
 
         /// <summary>
-        /// Get tool parameter
+        ///     Get tool parameter
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="count">count</param>
         /// <param name="merge">merge state</param>
         /// <returns>result</returns>
-        public bool GetParam(ushort addr, ushort count, bool merge = false) =>
-            State == ConnectionState.Connected && Session.GetParam(addr, count, merge);
+        public bool GetParam(ushort addr, ushort count, bool merge = false)
+        {
+            return State == ConnectionState.Connected && Session.GetParam(addr, count, merge);
+        }
+
         /// <summary>
-        /// Set tool parameter
+        ///     Set tool parameter
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="value">value</param>
         /// <returns>result</returns>
-        public bool SetParam(ushort addr, ushort value) =>
-            State == ConnectionState.Connected && Session.SetParam(addr, value);
+        public bool SetParam(ushort addr, ushort value)
+        {
+            return State == ConnectionState.Connected && Session.SetParam(addr, value);
+        }
+
         /// <summary>
-        /// Get tool information
+        ///     Get tool information
         /// </summary>
         /// <returns>result</returns>
-        public bool GetInfo() =>
-            State == ConnectionState.Connected && Session.GetInfo();
+        public bool GetInfo()
+        {
+            return State == ConnectionState.Connected && Session.GetInfo();
+        }
+
         /// <summary>
-        /// Set tool real-time monitoring state
-        /// </summary>
-        /// <param name="addr">address</param>
-        /// <param name="state">state</param>
-        /// <returns>result</returns>
-        public bool SetRealTime(ushort addr = 4002, ushort state = 1) =>
-            State == ConnectionState.Connected && Session.SetRealTime(addr, state);
-        /// <summary>
-        /// Set tool graph monitoring state
+        ///     Set tool real-time monitoring state
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="state">state</param>
         /// <returns>result</returns>
-        public bool SetGraph(ushort addr = 4100, ushort state = 1) =>
-            State == ConnectionState.Connected && Session.SetGraph(addr, state);
+        public bool SetRealTime(ushort addr = 4002, ushort state = 1)
+        {
+            return State == ConnectionState.Connected && Session.SetRealTime(addr, state);
+        }
+
         /// <summary>
-        /// Get tool graph monitoring state
+        ///     Set tool graph monitoring state
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="state">state</param>
         /// <returns>result</returns>
-        public bool GetGraph(ushort addr = 4200, ushort state = 1) =>
-            State == ConnectionState.Connected && Session.GetGraph(addr, state);
+        public bool SetGraph(ushort addr = 4100, ushort state = 1)
+        {
+            return State == ConnectionState.Connected && Session.SetGraph(addr, state);
+        }
+
         /// <summary>
-        /// Get tool current state
+        ///     Get tool graph monitoring state
+        /// </summary>
+        /// <param name="addr">address</param>
+        /// <param name="state">state</param>
+        /// <returns>result</returns>
+        public bool GetGraph(ushort addr = 4200, ushort state = 1)
+        {
+            return State == ConnectionState.Connected && Session.GetGraph(addr, state);
+        }
+
+        /// <summary>
+        ///     Get tool current state
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="count">count</param>
         /// <returns>result</returns>
-        public bool GetState(ushort addr = 3300, ushort count = 14) =>
-            State == ConnectionState.Connected && Session.GetState(addr, count);
+        public bool GetState(ushort addr = 3300, ushort count = 14)
+        {
+            return State == ConnectionState.Connected && Session.GetState(addr, count);
+        }
+
         /// <summary>
-        /// Set tool event monitoring state
+        ///     Set tool event monitoring state
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="state">state</param>
         /// <returns>result</returns>
-        public bool SetEventMonitor(ushort addr = 4015, ushort state = 1) =>
-            State == ConnectionState.Connected && Session.SetParam(addr, state);
+        public bool SetEventMonitor(ushort addr = 4015, ushort state = 1)
+        {
+            return State == ConnectionState.Connected && Session.SetParam(addr, state);
+        }
+
         /// <summary>
-        /// Acknowledge tool event monitoring
+        ///     Acknowledge tool event monitoring
         /// </summary>
         /// <param name="addr">address</param>
         /// <param name="ack">acknowledge</param>
         /// <returns>result</returns>
-        private bool AckEventMonitor(ushort addr = 4016, ushort ack = 1) =>
-            State == ConnectionState.Connected && Session.SetParam(addr, ack);
-        
+        private bool AckEventMonitor(ushort addr = 4016, ushort ack = 1)
+        {
+            return State == ConnectionState.Connected && Session.SetParam(addr, ack);
+        }
+
         private void ChangedConnection(bool state)
         {
             // check state
             switch (state)
             {
-                case true when 
-                    Session.State == ConnectionState.Connected && 
+                case true when
+                    Session.State == ConnectionState.Connected &&
                     (EventSession.Type != CommType.Ethernet || EventSession.State == ConnectionState.Connected):
                     // change state
                     State = ConnectionState.Connected;
                     // event
                     ConnectionChanged?.Invoke(ToolInfo, State);
                     break;
-                case false when 
+                case false when
                     Session.State == ConnectionState.Disconnected &&
                     (EventSession.Type != CommType.Ethernet || EventSession.State != ConnectionState.Connected):
                     // change state
@@ -280,11 +319,13 @@ namespace HCommAir.Manager
                     break;
             }
         }
+
         private void ReceivedMsg(Command cmd, int addr, int[] values)
         {
             // event
             SessionReceived?.Invoke(ToolInfo, cmd, addr, values);
         }
+
         private void ReceivedEventMsg(Command cmd, int addr, int[] values)
         {
             // event

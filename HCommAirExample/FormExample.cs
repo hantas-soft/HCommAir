@@ -3,9 +3,11 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Forms;
 using HComm.Common;
+using HComm.Device;
 using HCommAir;
 using HCommAir.Manager;
 using HCommAir.Tools;
+using HCommAirExample.Properties;
 
 namespace HCommAirExample
 {
@@ -23,16 +25,16 @@ namespace HCommAirExample
         private bool GraphState { get; set; }
         private DateTime GraphTime { get; set; } = DateTime.Now;
         private StringBuilder Logger { get; } = new StringBuilder();
-        
+
         private void FormExample_Load(object sender, EventArgs e)
         {
             // set path
-            tbPath.Text = Properties.Settings.Default.Path;
+            tbPath.Text = Settings.Default.Path;
             // binding list
             lbRegisteredTools.DataSource = RegisterTools;
             lbScannedTools.DataSource = ScanTools;
             // check port list
-            foreach (var item in HComm.Device.HcSerial.GetPortNames())
+            foreach (var item in HcSerial.GetPortNames())
                 // add port name
                 cbPorts.Items.Add(item);
             // check interface list
@@ -53,6 +55,7 @@ namespace HCommAirExample
             // start scanner
             HCommAir.Start();
         }
+
         private void timer_Tick(object sender, EventArgs e)
         {
             var scanned = HCommAir.GetScannedTools();
@@ -69,6 +72,7 @@ namespace HCommAirExample
                 // refresh
                 lbScannedTools.Refresh();
             }
+
             // check registered tools count
             if (registered.Count != RegisterTools.Count)
             {
@@ -81,6 +85,7 @@ namespace HCommAirExample
                 // refresh
                 lbRegisteredTools.Refresh();
             }
+
             // check graph state
             if (!GraphState || SelectedSession == null || SelectedSession.State != ConnectionState.Connected ||
                 !((DateTime.Now - GraphTime).TotalSeconds > 5))
@@ -90,6 +95,7 @@ namespace HCommAirExample
             // reset time
             GraphTime = DateTime.Now;
         }
+
         private void btPath_Click(object sender, EventArgs e)
         {
             using (var dlg = new FolderBrowserDialog())
@@ -100,10 +106,11 @@ namespace HCommAirExample
                 // set path
                 tbPath.Text = $@"{dlg.SelectedPath}\RegisteredTools.bin";
                 // save path
-                Properties.Settings.Default.Path = tbPath.Text;
-                Properties.Settings.Default.Save();
+                Settings.Default.Path = tbPath.Text;
+                Settings.Default.Save();
             }
         }
+
         private void btRegister_Click(object sender, EventArgs e)
         {
             var scanned = HCommAir.GetScannedTools();
@@ -134,6 +141,7 @@ namespace HCommAirExample
                 HCommAir.SaveRegisterTools(tbPath.Text);
             }
         }
+
         private void lbRegisteredTools_SelectedIndexChanged(object sender, EventArgs e)
         {
             // get item
@@ -154,6 +162,7 @@ namespace HCommAirExample
             lbSerial.Text = $@"S/N: {SelectedSession.ToolInfo.Serial}";
             lbState.Text = $@"STATE: {SelectedSession.State}";
         }
+
         private void btParamAction_Click(object sender, EventArgs e)
         {
             // check selected session
@@ -170,6 +179,7 @@ namespace HCommAirExample
                 // set param
                 SelectedSession.SetParam(addr, count);
         }
+
         private void btMonitorAction_Click(object sender, EventArgs e)
         {
             // check mac address
@@ -181,6 +191,7 @@ namespace HCommAirExample
             else if (sender == btStopMonitor)
                 SelectedSession.SetRealTime(4002, 0);
         }
+
         private void btGraphAction_Click(object sender, EventArgs e)
         {
             // check selected session
@@ -215,6 +226,7 @@ namespace HCommAirExample
                 GraphState = false;
             }
         }
+
         private void btClear_Click(object sender, EventArgs e)
         {
             // clear
@@ -222,6 +234,7 @@ namespace HCommAirExample
             // update
             tbLog.Text = $@"{Logger}";
         }
+
         private void btOpen_Click(object sender, EventArgs e)
         {
             // check text
@@ -233,7 +246,7 @@ namespace HCommAirExample
                 if (port == string.Empty)
                     return;
                 // Connect manual tool
-                HCommAir.ConnectManualTool(port, 115200, 1, CommType.Serial);
+                HCommAir.ConnectManualTool(port);
             }
             else
             {
@@ -243,7 +256,7 @@ namespace HCommAirExample
                 if (port == string.Empty)
                     return;
                 // Disconnect manual tool
-                HCommAir.DisConnectManualTool(port, 115200, 1, CommType.Serial);
+                HCommAir.DisConnectManualTool(port);
                 // set text
                 btOpen.Text = @"Open";
             }
@@ -261,6 +274,7 @@ namespace HCommAirExample
             // change interface
             HCommAir.ChangeInterfaceProp(inf.GetIPProperties().GetIPv4Properties());
         }
+
         private void OnChangedConnect(HcToolInfo info, ConnectionState state)
         {
             // check tool serial
@@ -272,30 +286,30 @@ namespace HCommAirExample
             }
             else
                 // set selected tool
+            {
                 SelectedSession = HCommAir.GetSession(info);
+            }
 
-            
+
             Invoke(new EventHandler(delegate
             {
                 // set state
                 lbState.Text = $@"STATE: {state}";
             }));
         }
+
         private void OnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
         {
             // check mac address
             //if (SelectedSession == null || SelectedSession.ToolInfo.Mac != info.Mac)
-                //return;
+            //return;
             // add log
             AddLog($@"== {info.Ip} : Cmd:{cmd} / Addr:{addr} / Len:{values.Length}");
             // check command
             switch (cmd)
             {
                 case Command.Read:
-                    Invoke(new EventHandler(delegate
-                    {
-                        nmCount.Value = values[0];
-                    }));
+                    Invoke(new EventHandler(delegate { nmCount.Value = values[0]; }));
                     break;
                 case Command.Mor:
                     break;
@@ -323,6 +337,7 @@ namespace HCommAirExample
                     return;
             }
         }
+
         private void AddLog(string log, bool lineFeed = false)
         {
             // add time

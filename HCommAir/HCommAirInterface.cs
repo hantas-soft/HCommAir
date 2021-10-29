@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Threading;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
+using System.Threading;
 using HComm.Common;
 using HCommAir.Manager;
 using HCommAir.Tools;
@@ -9,47 +9,30 @@ using HCommAir.Tools;
 namespace HCommAir
 {
     /// <summary>
-    /// HCommAir tool interface class
+    ///     HCommAir tool interface class
     /// </summary>
     public class HCommAirInterface
     {
-        private const int TickPeriod = 500;
-        private List<HcSession> Sessions { get; } = new List<HcSession>();
-        private HcManager Manager { get; } = new HcManager();
-
         /// <summary>
-        /// HCommAir session connection changed event delegate
+        ///     HCommAir session connection changed event delegate
         /// </summary>
         /// <param name="info">tool information</param>
         /// <param name="state">connection state</param>
         public delegate void SessionConnectChanged(HcToolInfo info, ConnectionState state);
+
         /// <summary>
-        /// HCommAir session received event delegate
+        ///     HCommAir session received event delegate
         /// </summary>
         /// <param name="info"></param>
         /// <param name="cmd"></param>
         /// <param name="addr"></param>
         /// <param name="values"></param>
         public delegate void SessionReceived(HcToolInfo info, Command cmd, int addr, int[] values);
-        /// <summary>
-        /// HCommAir session connection changed event
-        /// </summary>
-        public event SessionConnectChanged ChangedConnect;
-        /// <summary>
-        /// HCommAir session received event
-        /// </summary>
-        public event SessionReceived ReceivedMsg;
-        /// <summary>
-        /// HCommAir session max queue size
-        /// </summary>
-        public int MaxQueueSize { get; set; } = 30;
-        /// <summary>
-        /// HCommAir session max block size
-        /// </summary>
-        public int MaxBlockSize { get; set; } = 100;
+
+        private const int TickPeriod = 500;
 
         /// <summary>
-        /// Constructor
+        ///     Constructor
         /// </summary>
         public HCommAirInterface()
         {
@@ -59,55 +42,115 @@ namespace HCommAir
             Manager.ToolConnect += OnToolConnect;
             Manager.ToolDisconnect += OnToolDisconnect;
         }
+
+        private List<HcSession> Sessions { get; } = new List<HcSession>();
+        private HcManager Manager { get; } = new HcManager();
+
         /// <summary>
-        /// Tool scanning start
+        ///     HCommAir session max queue size
         /// </summary>
-        public void Start() => Manager.Start();
+        public int MaxQueueSize { get; set; } = 30;
+
         /// <summary>
-        /// Tool scanning stop
+        ///     HCommAir session max block size
         /// </summary>
-        public void Stop() => Manager.Stop();
+        public int MaxBlockSize { get; set; } = 100;
+
         /// <summary>
-        /// Interface properties change
+        ///     HCommAir session connection changed event
+        /// </summary>
+        public event SessionConnectChanged ChangedConnect;
+
+        /// <summary>
+        ///     HCommAir session received event
+        /// </summary>
+        public event SessionReceived ReceivedMsg;
+
+        /// <summary>
+        ///     Tool scanning start
+        /// </summary>
+        public void Start()
+        {
+            Manager.Start();
+        }
+
+        /// <summary>
+        ///     Tool scanning stop
+        /// </summary>
+        public void Stop()
+        {
+            Manager.Stop();
+        }
+
+        /// <summary>
+        ///     Interface properties change
         /// </summary>
         /// <param name="p">properties</param>
-        public void ChangeInterfaceProp(IPv4InterfaceProperties p) => Manager.ChangeInterfaceProp(p);
+        public void ChangeInterfaceProp(IPv4InterfaceProperties p)
+        {
+            Manager.ChangeInterfaceProp(p);
+        }
+
         /// <summary>
-        /// Save registered tool list
+        ///     Save registered tool list
         /// </summary>
         /// <param name="path">file path</param>
         /// <returns>result</returns>
-        public bool SaveRegisterTools(string path) => Manager.SaveRegisterTools(path);
+        public bool SaveRegisterTools(string path)
+        {
+            return Manager.SaveRegisterTools(path);
+        }
+
         /// <summary>
-        /// Load registered tool list
+        ///     Load registered tool list
         /// </summary>
         /// <param name="path"></param>
         /// <returns></returns>
-        public bool LoadRegisterTools(string path) => Manager.LoadRegisterTools(path);
+        public bool LoadRegisterTools(string path)
+        {
+            return Manager.LoadRegisterTools(path);
+        }
+
         /// <summary>
-        /// Get registered tool list
+        ///     Get registered tool list
         /// </summary>
         /// <returns>too list</returns>
-        public List<HcToolInfo> GetRegisteredTools() => Manager.GetRegisteredTools();
+        public List<HcToolInfo> GetRegisteredTools()
+        {
+            return Manager.GetRegisteredTools();
+        }
+
         /// <summary>
-        /// Get scanned tool list
+        ///     Get scanned tool list
         /// </summary>
         /// <returns>result</returns>
-        public List<HcToolInfo> GetScannedTools() => Manager.GetScannedTools();
+        public List<HcToolInfo> GetScannedTools()
+        {
+            return Manager.GetScannedTools();
+        }
+
         /// <summary>
-        /// Register tool
+        ///     Register tool
         /// </summary>
         /// <param name="info">tool information</param>
         /// <returns>result</returns>
-        public bool RegisterTool(HcToolInfo info) => Manager.RegisterTool(info);
+        public bool RegisterTool(HcToolInfo info)
+        {
+            return Manager.RegisterTool(info);
+        }
+
         /// <summary>
-        /// UnRegister tool
+        ///     UnRegister tool
         /// </summary>
         /// <param name="info">tool information</param>
         /// <returns>result</returns>
-        public bool UnRegisterTool(HcToolInfo info) => Manager.UnRegisterTool(info);
+        public bool UnRegisterTool(HcToolInfo info)
+        {
+            return Manager.UnRegisterTool(info);
+        }
+
         /// <summary>
-        /// Get session
+        ///     Get session
         /// </summary>
         /// <param name="info">tool information</param>
         /// <returns>result</returns>
@@ -129,8 +172,9 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+
         /// <summary>
-        /// Get all sessions
+        ///     Get all sessions
         /// </summary>
         /// <returns>result</returns>
         public List<HcSession> GetAllSessions()
@@ -151,8 +195,9 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+
         /// <summary>
-        /// All sessions stop event monitoring
+        ///     All sessions stop event monitoring
         /// </summary>
         public void StopAllSessionsEventMonitor()
         {
@@ -164,7 +209,7 @@ namespace HCommAir
                 // check lock taken
                 if (!lockTaken)
                     return;
-                
+
                 // check sessions
                 foreach (var session in Sessions)
                     // stop event monitor
@@ -178,8 +223,9 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+
         /// <summary>
-        /// Connect manual tool
+        ///     Connect manual tool
         /// </summary>
         /// <param name="target">target</param>
         /// <param name="option">option</param>
@@ -196,13 +242,15 @@ namespace HCommAir
                 case CommType.None:
                     break;
                 case CommType.Serial:
+                    var port = Convert.ToInt32(target.Substring(3));
                     // get com port
-                    values[23] = Convert.ToByte(target.Substring(3));
+                    values[22] = Convert.ToByte((port >> 8) & 0xFF);
+                    values[23] = Convert.ToByte(port & 0xFF);
                     // set baud rate
-                    values[26] = (byte) ((option >> 24) & 0xFF);
-                    values[27] = (byte) ((option >> 16) & 0xFF);
-                    values[28] = (byte) ((option >> 8) & 0xFF);
-                    values[29] = (byte) (option & 0xFF);
+                    values[26] = (byte)((option >> 24) & 0xFF);
+                    values[27] = (byte)((option >> 16) & 0xFF);
+                    values[28] = (byte)((option >> 8) & 0xFF);
+                    values[29] = (byte)(option & 0xFF);
                     // set mac number
                     values[31] = values[23];
                     // set id
@@ -214,8 +262,8 @@ namespace HCommAir
                     for (var i = 0; i < ip.Length; i++)
                         values[20 + i] = Convert.ToByte(ip[i]);
                     // set port
-                    values[24] = (byte) ((option >> 8) & 0xFF);
-                    values[25] = (byte) (option & 0xFF);
+                    values[24] = (byte)((option >> 8) & 0xFF);
+                    values[25] = (byte)(option & 0xFF);
                     // set mac number
                     values[31] = values[23];
                     // set id
@@ -232,21 +280,24 @@ namespace HCommAir
                 default:
                     return;
             }
+
             // set type
-            values[33] = (byte) type;
+            values[33] = (byte)type;
             // set values
             info.SetValues(values);
             // connect tool
             OnToolConnect(info);
         }
+
         /// <summary>
-        /// Disconnect manual tool
+        ///     Disconnect manual tool
         /// </summary>
         /// <param name="target">target</param>
         /// <param name="option">option</param>
         /// <param name="id">id</param>
         /// <param name="type">type</param>
-        public void DisConnectManualTool(string target, int option = 115200, byte id = 1, CommType type = CommType.Serial)
+        public void DisConnectManualTool(string target, int option = 115200, byte id = 1,
+            CommType type = CommType.Serial)
         {
             var info = new HcToolInfo();
             // get values
@@ -257,13 +308,15 @@ namespace HCommAir
                 case CommType.None:
                     break;
                 case CommType.Serial:
+                    var port = Convert.ToInt32(target.Substring(3));
                     // get com port
-                    values[23] = Convert.ToByte(target.Substring(3));
+                    values[22] = Convert.ToByte((port >> 8) & 0xFF);
+                    values[23] = Convert.ToByte(port & 0xFF);
                     // set baud rate
-                    values[26] = (byte) ((option >> 24) & 0xFF);
-                    values[27] = (byte) ((option >> 16) & 0xFF);
-                    values[28] = (byte) ((option >> 8) & 0xFF);
-                    values[29] = (byte) (option & 0xFF);
+                    values[26] = (byte)((option >> 24) & 0xFF);
+                    values[27] = (byte)((option >> 16) & 0xFF);
+                    values[28] = (byte)((option >> 8) & 0xFF);
+                    values[29] = (byte)(option & 0xFF);
                     // set mac number
                     values[31] = values[23];
                     // set id
@@ -275,8 +328,8 @@ namespace HCommAir
                     for (var i = 0; i < ip.Length; i++)
                         values[20 + i] = Convert.ToByte(ip[i]);
                     // set port
-                    values[24] = (byte) ((option >> 8) & 0xFF);
-                    values[24] = (byte) (option & 0xFF);
+                    values[24] = (byte)((option >> 8) & 0xFF);
+                    values[24] = (byte)(option & 0xFF);
                     // set mac number
                     values[31] = values[23];
                     // set id
@@ -291,6 +344,7 @@ namespace HCommAir
                 default:
                     return;
             }
+
             // set values
             info.SetValues(values);
             // connect tool
@@ -320,10 +374,11 @@ namespace HCommAir
                     session.SessionReceived += OnSessionReceived;
                     session.EventReceived += OnSessionReceived;
                     // add session
-                    Sessions.Add(session);                    
+                    Sessions.Add(session);
                 }
+
                 // setup
-                session.SetUp(info.Serial != string.Empty ? CommType.Ethernet : (CommType) info.GetValues()[33]);
+                session.SetUp(info.Serial != string.Empty ? CommType.Ethernet : (CommType)info.GetValues()[33]);
                 // set message queue size and block size
                 session.MaxQueueSize = MaxQueueSize;
                 session.MaxBlockSize = MaxBlockSize;
@@ -338,6 +393,7 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+
         private void OnToolDisconnect(HcToolInfo info)
         {
             var lockTaken = false;
@@ -348,7 +404,7 @@ namespace HCommAir
                 // check lock taken
                 if (!lockTaken)
                     return;
-                
+
                 // get session
                 var session = Sessions.Find(x => x.ToolInfo.Mac == info.Mac);
                 // check session
@@ -365,6 +421,7 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+
         private void OnToolRemoved(HcToolInfo info)
         {
             var lockTaken = false;
@@ -394,11 +451,13 @@ namespace HCommAir
                     Monitor.Exit(Sessions);
             }
         }
+
         private void OnConnectionChanged(HcToolInfo info, ConnectionState state)
         {
             // event
             ChangedConnect?.Invoke(info, state);
         }
+
         private void OnSessionReceived(HcToolInfo info, Command cmd, int addr, int[] values)
         {
             ReceivedMsg?.Invoke(info, cmd, addr, values);

@@ -291,9 +291,12 @@ namespace HCommAir.Manager
         /// <param name="addr">address</param>
         /// <param name="ack">acknowledge</param>
         /// <returns>result</returns>
-        private bool AckEventMonitor(ushort addr = 4016, ushort ack = 1)
+        private void AckEventMonitor(ushort addr = 4016, ushort ack = 1)
         {
-            return State == ConnectionState.Connected && Session.SetParam(addr, ack);
+            // check state
+            if (State == ConnectionState.Connected)
+                // acknowledge event monitoring
+                Session.SetParam(addr, ack);
         }
 
         private void ChangedConnection(bool state)

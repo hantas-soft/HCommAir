@@ -53,7 +53,6 @@ namespace HCommAir.Manager
         /// <summary>
         ///     HCommAir tool scanning start
         /// </summary>
-        [Obsolete]
         public void Start()
         {
             // clear searched tool list
@@ -136,7 +135,6 @@ namespace HCommAir.Manager
             }
         }
 
-        [Obsolete]
         private void ClientReceived(IAsyncResult ar)
         {
             // end receive point

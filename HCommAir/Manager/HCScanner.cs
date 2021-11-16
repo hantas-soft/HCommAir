@@ -30,8 +30,16 @@ namespace HCommAir.Manager
         /// </summary>
         public HcScanner()
         {
-            Client = new UdpClient(new IPEndPoint(IPAddress.Any, McPort));
-            ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
+            try
+            {
+                Client = new UdpClient(new IPEndPoint(IPAddress.Any, McPort));
+                ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(@"HCommAir_HCScanner_Constructor");
+                Console.WriteLine($@"{ex.Message}");
+            }
         }
 
         private UdpClient Client { get; }
@@ -55,6 +63,9 @@ namespace HCommAir.Manager
         /// </summary>
         public void Start()
         {
+            // check client
+            if (Client == null)
+                return;
             // clear searched tool list
             SearchTools.Clear();
             // join multicast group
@@ -86,7 +97,8 @@ namespace HCommAir.Manager
         /// <param name="p">interface properties</param>
         public void ChangeInterfaceProp(IPv4InterfaceProperties p)
         {
-            Client.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface,
+            // check socket option
+            Client?.Client.SetSocketOption(SocketOptionLevel.IP, SocketOptionName.MulticastInterface,
                 IPAddress.HostToNetworkOrder(p.Index));
         }
 

@@ -66,6 +66,7 @@ namespace HCommAir
         /// </summary>
         public event SessionReceived ReceivedMsg;
 
+
         /// <summary>
         ///     Tool scanning start
         /// </summary>
@@ -110,6 +111,12 @@ namespace HCommAir
         {
             return Manager.LoadRegisterTools(path);
         }
+
+        /// <summary>
+        ///     Get scan tool state
+        /// </summary>
+        /// <returns>state</returns>
+        public bool GetScanState() => Manager.GetScanState();
 
         /// <summary>
         ///     Get registered tool list

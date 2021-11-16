@@ -147,6 +147,7 @@ private void OnReceivedMsg(HcToolInfo info, Command cmd, int addr, int[] values)
 v1.0.9
 
 - Driver model update (PT->BPT)
+- Scan state method feature added
 - Minor bug fixed
 
 v1.0.7

@@ -32,7 +32,18 @@ namespace HCommAir.Manager
         {
             try
             {
-                Client = new UdpClient(new IPEndPoint(IPAddress.Any, McPort));
+                // check port numbers
+                for (var port = 50000; port < 60000; port++)
+                {
+                    // check port
+                    if (!IsPortAvailable(port))
+                        continue;
+                    // client
+                    Client = new UdpClient(new IPEndPoint(IPAddress.Any, port));
+                    // exit
+                    break;
+                }
+                // set scan timer
                 ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
             }
             catch (Exception ex)
@@ -204,6 +215,27 @@ namespace HCommAir.Manager
                 // unlock
                 Monitor.Exit(SearchTools);
             }
+        }
+
+        private static bool IsPortAvailable(int port)
+        {
+            var ipProperties = IPGlobalProperties.GetIPGlobalProperties();
+            // get active connections
+            var tcpConnections = ipProperties.GetActiveTcpConnections();
+            // check connections
+            if (tcpConnections.Any(conInfo => conInfo.LocalEndPoint.Port == port))
+                // used
+                return false;
+            // check TCP listening port
+            var tcpEndPoint = ipProperties.GetActiveUdpListeners();
+            // check connections
+            if (tcpEndPoint.Any(conInfo => conInfo.Port == port))
+                // used
+                return false;
+            // check UDP listening port
+            var udpEndPoint = ipProperties.GetActiveUdpListeners();
+            // check connections
+            return udpEndPoint.All(conInfo => conInfo.Port != port);
         }
 
         private enum ScanCommand

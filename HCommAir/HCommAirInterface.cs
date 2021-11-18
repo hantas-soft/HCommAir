@@ -56,6 +56,8 @@ namespace HCommAir
         /// </summary>
         public int MaxBlockSize { get; set; } = 100;
 
+        public int DebugPort { get; set; }
+
         /// <summary>
         ///     HCommAir session connection changed event
         /// </summary>

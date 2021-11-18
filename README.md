@@ -148,6 +148,7 @@ v1.0.9
 
 - Driver model update (PT->BPT)
 - Scan state method feature added
+- Scan duplicate port check
 - Minor bug fixed
 
 v1.0.7

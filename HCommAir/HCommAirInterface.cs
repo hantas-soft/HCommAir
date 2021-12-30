@@ -118,7 +118,10 @@ namespace HCommAir
         ///     Get scan tool state
         /// </summary>
         /// <returns>state</returns>
-        public bool GetScanState() => Manager.GetScanState();
+        public bool GetScanState()
+        {
+            return Manager.GetScanState();
+        }
 
         /// <summary>
         ///     Get registered tool list
@@ -294,8 +297,13 @@ namespace HCommAir
             values[33] = (byte)type;
             // set values
             info.SetValues(values);
-            // connect tool
-            OnToolConnect(info);
+            // check type
+            if (type != CommType.Ethernet)
+                // connect tool
+                OnToolConnect(info);
+            else
+                // register tool
+                RegisterTool(info);
         }
 
         /// <summary>
@@ -356,8 +364,13 @@ namespace HCommAir
 
             // set values
             info.SetValues(values);
-            // connect tool
-            OnToolRemoved(info);
+            // check type
+            if (type != CommType.Ethernet)
+                // connect tool
+                OnToolRemoved(info);
+            else
+                // unregister tool
+                UnRegisterTool(info);
         }
 
         private void OnToolConnect(HcToolInfo info)

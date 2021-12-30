@@ -22,8 +22,8 @@ namespace HCommAir.Manager
 
         private const int McPort = 53256;
         private const int ScanPeriod = 1000;
+        private const int TimeoutTime = 100;
         private readonly IPAddress _mcIpAddr = IPAddress.Parse("239.66.77.43");
-        private readonly TimeSpan _timeoutSpan = new TimeSpan(0, 0, 0, 0, 100);
 
         /// <summary>
         ///     Constructor
@@ -43,6 +43,7 @@ namespace HCommAir.Manager
                     // exit
                     break;
                 }
+
                 // set scan timer
                 ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
             }
@@ -133,7 +134,7 @@ namespace HCommAir.Manager
             }
 
             // lock searching tool list
-            if (!Monitor.TryEnter(SearchTools, _timeoutSpan))
+            if (!Monitor.TryEnter(SearchTools, TimeoutTime))
                 return;
             try
             {
@@ -182,7 +183,7 @@ namespace HCommAir.Manager
             if (info.ToolType == HcToolInfo.ToolModelType.None)
                 return;
             // lock searched tool list
-            if (!Monitor.TryEnter(SearchTools, _timeoutSpan))
+            if (!Monitor.TryEnter(SearchTools, TimeoutTime))
                 return;
             try
             {

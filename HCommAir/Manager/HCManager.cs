@@ -319,12 +319,15 @@ namespace HCommAir.Manager
                     Monitor.Exit(ScannedTools);
             }
         }
-        
+
         /// <summary>
         ///     Get scanning state
         /// </summary>
         /// <returns>state</returns>
-        public bool GetScanState() => Scanner.IsScanning;
+        public bool GetScanState()
+        {
+            return Scanner.IsScanning;
+        }
 
         /// <summary>
         ///     Get all network interface
@@ -339,7 +342,7 @@ namespace HCommAir.Manager
                 where item.GetIPProperties().GetIPv4Properties() != null
                 select item).ToList();
         }
-        
+
         private void ScannerOnToolAttach(HcToolInfo info)
         {
             var lockTakenScan = false;

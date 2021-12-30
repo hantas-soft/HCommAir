@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text;
 using System.Windows.Forms;
 using HComm.Common;
@@ -33,8 +34,15 @@ namespace HCommAirExample
             // binding list
             lbRegisteredTools.DataSource = RegisterTools;
             lbScannedTools.DataSource = ScanTools;
+            /* SERIAL
             // check port list
             foreach (var item in HcSerial.GetPortNames())
+                // add port name
+                cbPorts.Items.Add(item);
+            */
+            /* USB */
+            // check port list
+            foreach (var item in HcUsb.GetDeviceNames())
                 // add port name
                 cbPorts.Items.Add(item);
             // check interface list
@@ -245,8 +253,10 @@ namespace HCommAirExample
                 // check port name
                 if (port == string.Empty)
                     return;
-                // Connect manual tool
-                HCommAir.ConnectManualTool(port);
+                // Connect manual tool : SERIAL
+                // HCommAir.ConnectManualTool(port);
+                // Connect manual tool : USB
+                HCommAir.ConnectManualTool(port, 0, 2, CommType.Usb);
             }
             else
             {
@@ -255,8 +265,10 @@ namespace HCommAirExample
                 // check port name
                 if (port == string.Empty)
                     return;
-                // Disconnect manual tool
-                HCommAir.DisConnectManualTool(port);
+                // Disconnect manual tool : SERIAL
+                // HCommAir.DisConnectManualTool(port);
+                // Disconnect manual tool : USB
+                HCommAir.DisConnectManualTool(port, 0, 2, CommType.Usb);
                 // set text
                 btOpen.Text = @"Open";
             }
@@ -277,6 +289,8 @@ namespace HCommAirExample
 
         private void OnChangedConnect(HcToolInfo info, ConnectionState state)
         {
+            // debug
+            Debug.WriteLine($@"[{info.Ip}] {state}");
             // check tool serial
             if (info.Serial != string.Empty)
             {

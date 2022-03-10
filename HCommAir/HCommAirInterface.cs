@@ -49,7 +49,7 @@ namespace HCommAir
         /// <summary>
         ///     HCommAir session max queue size
         /// </summary>
-        public int MaxQueueSize { get; set; } = 30;
+        public int MaxQueueSize { get; set; } = 100;
 
         /// <summary>
         ///     HCommAir session max block size

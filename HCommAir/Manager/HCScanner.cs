@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -40,10 +41,10 @@ namespace HCommAir.Manager
                         continue;
                     // client
                     Client = new UdpClient(new IPEndPoint(IPAddress.Any, port));
-                    // exit
-                    break;
+                    // check client
+                    if (Client != null)
+                        break;
                 }
-
                 // set scan timer
                 ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
             }
@@ -125,12 +126,21 @@ namespace HCommAir.Manager
                 var packet = new byte[]
                     { (byte)((TransactionId >> 8) & 0xFF), (byte)(TransactionId & 0xFF), 0x00, 0x01 };
 
-                // debug
-                // Console.WriteLine($@"Send time: {DateTime.Now:hh:mm:ss:fff}");
-                // send packet
-                Client.Send(packet, packet.Length, new IPEndPoint(_mcIpAddr, McPort));
-                // reset transaction time
-                TransactionTime = DateTime.Now;
+                // try catch
+                try
+                {
+                    // debug
+                    // Console.WriteLine($@"Send time: {DateTime.Now:hh:mm:ss:fff}");
+                    // send packet
+                    Client.Send(packet, packet.Length, new IPEndPoint(_mcIpAddr, McPort));
+                    // reset transaction time
+                    TransactionTime = DateTime.Now;
+                }
+                catch (Exception ex)
+                {
+                    // debug
+                    Debug.WriteLine(ex.Message);
+                }
             }
 
             // lock searching tool list

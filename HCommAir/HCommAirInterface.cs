@@ -21,12 +21,20 @@ namespace HCommAir
         public delegate void SessionConnectChanged(HcToolInfo info, ConnectionState state);
 
         /// <summary>
+        ///     HCommAir session monitor received event delegate
+        /// </summary>
+        /// <param name="info">tool information</param>
+        /// <param name="cmd">command</param>
+        /// <param name="values">values</param>
+        public delegate void SessionMorReceived(HcToolInfo info, MonitorCommand cmd, byte[] values);
+
+        /// <summary>
         ///     HCommAir session received event delegate
         /// </summary>
-        /// <param name="info"></param>
-        /// <param name="cmd"></param>
-        /// <param name="addr"></param>
-        /// <param name="values"></param>
+        /// <param name="info">tool information</param>
+        /// <param name="cmd">command</param>
+        /// <param name="addr">address</param>
+        /// <param name="values">values</param>
         public delegate void SessionReceived(HcToolInfo info, Command cmd, int addr, int[] values);
 
         private const int TickPeriod = 500;
@@ -67,6 +75,11 @@ namespace HCommAir
         ///     HCommAir session received event
         /// </summary>
         public event SessionReceived ReceivedMsg;
+
+        /// <summary>
+        ///     HCommAir session monitor received event
+        /// </summary>
+        public event SessionMorReceived ReceivedMorMsg;
 
 
         /// <summary>
@@ -394,7 +407,7 @@ namespace HCommAir
                     // set session event
                     session.ConnectionChanged += OnConnectionChanged;
                     session.SessionReceived += OnSessionReceived;
-                    session.EventReceived += OnSessionReceived;
+                    session.EventReceived += OnEventReceived;
                     // add session
                     Sessions.Add(session);
                 }
@@ -482,7 +495,14 @@ namespace HCommAir
 
         private void OnSessionReceived(HcToolInfo info, Command cmd, int addr, int[] values)
         {
+            // event
             ReceivedMsg?.Invoke(info, cmd, addr, values);
+        }
+
+        private void OnEventReceived(HcToolInfo info, MonitorCommand cmd, byte[] values)
+        {
+            // event
+            ReceivedMorMsg?.Invoke(info, cmd, values);
         }
     }
 }

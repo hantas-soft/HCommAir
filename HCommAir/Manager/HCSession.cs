@@ -28,6 +28,11 @@ namespace HCommAir.Manager
         public delegate void ReceivedHandler(HcToolInfo info, Command cmd, int addr, int[] values);
 
         /// <summary>
+        ///     Received monitor event handler delegate
+        /// </summary>
+        public delegate void ReceivedMorHandler(HcToolInfo info, MonitorCommand cmd, byte[] values);
+
+        /// <summary>
         ///     Constructor
         /// </summary>
         /// <param name="info">Tool information</param>
@@ -37,20 +42,17 @@ namespace HCommAir.Manager
             ToolInfo = info;
             // sessions
             Session = new HCommInterface();
-            EventSession = new HCommInterface();
+            // EventSession = new HCommInterface();
             // reset state
             State = ConnectionState.Disconnected;
             // set event
             Session.ReceivedMsg = ReceivedMsg;
             Session.ChangedConnection = ChangedConnection;
-            EventSession.ReceivedMsg = ReceivedEventMsg;
-            EventSession.ChangedConnection = ChangedConnection;
-            // set option
-            EventSession.AutoRequestInfo = false;
+            Session.ReceivedMorMsg = ReceivedMorMsg;
         }
 
         private HCommInterface Session { get; }
-        private HCommInterface EventSession { get; }
+        // private HCommInterface EventSession { get; }
 
         /// <summary>
         ///     Tool information
@@ -103,7 +105,12 @@ namespace HCommAir.Manager
         /// <summary>
         ///     Received event
         /// </summary>
-        public event ReceivedHandler SessionReceived, EventReceived;
+        public event ReceivedHandler SessionReceived;
+
+        /// <summary>
+        ///     Received monitor event
+        /// </summary>
+        public event ReceivedMorHandler EventReceived;
 
         /// <summary>
         ///     SetUp session
@@ -118,7 +125,6 @@ namespace HCommAir.Manager
             SessionType = type;
             // set up session
             Session.SetUp(SessionType);
-            EventSession.SetUp(SessionType);
         }
 
         /// <summary>
@@ -129,8 +135,6 @@ namespace HCommAir.Manager
         {
             // check state
             if (Session.State == ConnectionState.Connected)
-                return;
-            if (EventSession.Type == CommType.Ethernet && EventSession.State == ConnectionState.Connected)
                 return;
 
             var target = string.Empty;
@@ -172,10 +176,6 @@ namespace HCommAir.Manager
 
             // try connect session
             Session.Connect(target, option, id);
-            // check event session type
-            if (EventSession.Type == CommType.Ethernet)
-                // try connect event session
-                EventSession.Connect(ToolInfo.Ip, ToolInfo.Port + 1);
 
             // change state
             State = ConnectionState.Connecting;
@@ -190,10 +190,7 @@ namespace HCommAir.Manager
             if (Session.State == ConnectionState.Connected)
                 // close
                 Session.Close();
-            // check event session state
-            if (EventSession.State == ConnectionState.Connected)
-                // close
-                EventSession.Close();
+
             // change state
             State = ConnectionState.Disconnecting;
         }
@@ -285,36 +282,20 @@ namespace HCommAir.Manager
             return State == ConnectionState.Connected && Session.SetParam(addr, state);
         }
 
-        /// <summary>
-        ///     Acknowledge tool event monitoring
-        /// </summary>
-        /// <param name="addr">address</param>
-        /// <param name="ack">acknowledge</param>
-        /// <returns>result</returns>
-        private void AckEventMonitor(ushort addr = 4016, ushort ack = 1)
-        {
-            // check state
-            if (State == ConnectionState.Connected)
-                // acknowledge event monitoring
-                Session.SetParam(addr, ack);
-        }
-
         private void ChangedConnection(bool state)
         {
             // check state
             switch (state)
             {
                 case true when
-                    Session.State == ConnectionState.Connected &&
-                    (EventSession.Type != CommType.Ethernet || EventSession.State == ConnectionState.Connected):
+                    Session.State == ConnectionState.Connected:
                     // change state
                     State = ConnectionState.Connected;
                     // event
                     ConnectionChanged?.Invoke(ToolInfo, State);
                     break;
                 case false when
-                    Session.State == ConnectionState.Disconnected &&
-                    (EventSession.Type != CommType.Ethernet || EventSession.State != ConnectionState.Connected):
+                    Session.State == ConnectionState.Disconnected:
                     // change state
                     State = ConnectionState.Disconnected;
                     // event
@@ -329,14 +310,10 @@ namespace HCommAir.Manager
             SessionReceived?.Invoke(ToolInfo, cmd, addr, values);
         }
 
-        private void ReceivedEventMsg(Command cmd, int addr, int[] values)
+        private void ReceivedMorMsg(MonitorCommand cmd, byte[] packet)
         {
             // event
-            EventReceived?.Invoke(ToolInfo, cmd, addr, values);
-            // check cmd
-            if (cmd == Command.Mor)
-                // acknowledge event monitor
-                AckEventMonitor();
+            EventReceived?.Invoke(ToolInfo, cmd, packet);
         }
     }
 }

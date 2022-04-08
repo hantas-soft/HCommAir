@@ -11,14 +11,14 @@
         <PackageTags>C#, .Net Standard 2.0, Wireless</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <PackageProjectUrl>https://github.com/KyungtackKim/HCommAir.git</PackageProjectUrl>
-        <AssemblyVersion>1.0.9.23</AssemblyVersion>
-        <FileVersion>1.0.9.23</FileVersion>
-        <Version>1.0.9.23</Version>
-        <PackageVersion>1.0.9.23</PackageVersion>
+        <AssemblyVersion>1.0.9.25</AssemblyVersion>
+        <FileVersion>1.0.9.25</FileVersion>
+        <Version>1.0.9.25</Version>
+        <PackageVersion>1.0.9.25</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="HComm" Version="1.2.8.8" />
+        <PackageReference Include="HComm" Version="1.2.9.2" />
     </ItemGroup>
 
     <ItemGroup>

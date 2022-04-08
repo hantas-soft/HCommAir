@@ -45,6 +45,7 @@ namespace HCommAir.Manager
                     if (Client != null)
                         break;
                 }
+
                 // set scan timer
                 ScanTimer = new Timer(ScanTimer_Tick, null, Timeout.Infinite, Timeout.Infinite);
             }

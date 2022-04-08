@@ -106,8 +106,11 @@ namespace HCommAir.Tools
         ///     Set raw values
         /// </summary>
         /// <param name="values">values</param>
-        public void SetValues(IEnumerable<byte> values)
+        public void SetValues(byte[] values)
         {
+            // check values length
+            if (values == null || values.Length != Count)
+                return;
             // clear values
             Values.Clear();
             // add values

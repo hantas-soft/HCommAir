@@ -215,7 +215,7 @@ namespace HCommAir.Manager
                 else
                 {
                     // change state
-                    tool.SetValues(receive.Skip(4));
+                    tool.SetValues(receive.Skip(4).ToArray());
                     // refresh tool
                     tool.ResetTime();
                     // alive

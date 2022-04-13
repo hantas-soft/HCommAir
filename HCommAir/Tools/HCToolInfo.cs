@@ -39,10 +39,15 @@ namespace HCommAir.Tools
         ///     Constructor
         /// </summary>
         /// <param name="values">tool data</param>
-        public HcToolInfo(IEnumerable<byte> values)
+        public HcToolInfo(IReadOnlyList<byte> values) : this()
         {
-            // add values
-            Values = new List<byte>(values);
+            // check values
+            if (values.Count < Count)
+                return;
+            // check count
+            for (var i = 0; i < Count; i++)
+                // set values
+                Values[i] = values[i];
         }
 
         private List<byte> Values { get; }
@@ -111,10 +116,10 @@ namespace HCommAir.Tools
             // check values length
             if (values == null || values.Length != Count)
                 return;
-            // clear values
-            Values.Clear();
-            // add values
-            Values.AddRange(values);
+            // check count
+            for (var i = 0; i < Count; i++)
+                // change values
+                Values[i] = values[i];
         }
     }
 }

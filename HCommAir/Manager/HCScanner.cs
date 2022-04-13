@@ -189,7 +189,7 @@ namespace HCommAir.Manager
             if (cmd != ScanCommand.ScanAck || id != TransactionId || receive.Length - 4 != HcToolInfo.Count)
                 return;
             // set tool information
-            var info = new HcToolInfo(receive.Skip(4));
+            var info = new HcToolInfo(receive.Skip(4).ToArray());
             // check MD/MDTC
             if (info.ToolType == HcToolInfo.ToolModelType.None)
                 return;
